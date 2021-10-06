@@ -1,8 +1,8 @@
 {
   "name": "accesoNewo",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "author": "Ionic Framework + JHipster",
+  "homepage": "https://www.jhipster.tech",
   "scripts": {
     "ng": "ng",
     "start": "ionic serve",
@@ -12,7 +12,8 @@
     "e2e": "ng e2e --port 8100",
     "test:watch": "jest --watch",
     "test:ci": "jest --runInBand",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "prettier": "prettier --write \"{,e2e/**/,src/**/}*.{js,json,html,md,ts,css,scss,yml}\" --loglevel silent"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +23,7 @@
     "@angular/platform-browser": "~12.1.1",
     "@angular/platform-browser-dynamic": "~12.1.1",
     "@angular/router": "~12.1.1",
+    "@angular/service-worker": "~12.1.1",
     "@capacitor/app": "1.0.3",
     "@capacitor/core": "3.2.4",
     "@capacitor/haptics": "1.1.0",
@@ -85,7 +87,8 @@
     "protractor": "~7.0.0",
     "ts-loader": "9.2.5",
     "ts-node": "~8.3.0",
-    "typescript": "~4.2.4"
+    "typescript": "~4.2.4",
+    "generator-jhipster-ionic": "6.1.1"
   },
   "cordova": {
     "plugins": {
@@ -132,5 +135,5 @@
     ],
     "coverageDirectory": "./public/coverage"
   },
-  "description": "An Ionic project"
+  "description": "A hipster Ionic project, made with 💙 by @oktadev!"
 }
