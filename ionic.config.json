@@ -1,0 +1,7 @@
+{
+  "name": "accesoNewo",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
