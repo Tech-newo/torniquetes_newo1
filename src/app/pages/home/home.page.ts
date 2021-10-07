@@ -3,6 +3,7 @@ import { NavController } from '@ionic/angular';
 import { Account } from 'src/model/account.model';
 import { AccountService } from '../../services/auth/account.service';
 import { LoginService } from '../../services/login/login.service';
+import { LoginPage } from '../login/login.page';
 
 @Component({
   selector: 'app-home',
@@ -11,8 +12,13 @@ import { LoginService } from '../../services/login/login.service';
 })
 export class HomePage implements OnInit {
   account: Account;
+  codigoQR : string = " "
 
-  constructor(public navController: NavController, private accountService: AccountService, private loginService: LoginService) {}
+  constructor(
+    public navController: NavController, 
+    private accountService: AccountService, 
+    private loginService: LoginService
+  ) {}
 
   ngOnInit() {
     this.accountService.identity().then(account => {
@@ -36,4 +42,10 @@ export class HomePage implements OnInit {
   private goBackToHomePage(): void {
     this.navController.navigateBack('');
   }
+
+  // get Code 
+  getCode(){
+    console.log('codigoQR',this.codigoQR)
+    console.log(LoginPage.sede)
+  } 
 }

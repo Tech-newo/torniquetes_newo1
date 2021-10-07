@@ -15,6 +15,8 @@ export class LoginPage implements OnInit {
     password: '',
     rememberMe: false
   };
+  auxSede: string = ''
+  public static sede: string
 
   // Our translated text strings
   private loginErrorString: string;
@@ -24,7 +26,7 @@ export class LoginPage implements OnInit {
     public loginService: LoginService,
     public toastController: ToastController,
     public navController: NavController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.translateService.get('LOGIN_ERROR').subscribe(value => {
@@ -32,21 +34,30 @@ export class LoginPage implements OnInit {
     });
   }
 
-  doLogin() {
-    this.loginService.login(this.account).then(
-      () => {
-        this.navController.navigateRoot('/tabs');
-      },
-      async err => {
-        // Unable to log in
-        this.account.password = '';
-        const toast = await this.toastController.create({
-          message: this.loginErrorString,
-          duration: 3000,
-          position: 'top'
-        });
-        toast.present();
-      }
-    );
+  async doLogin() {
+    const toast = await this.toastController.create({
+      message: this.loginErrorString,
+      duration: 3000,
+      position: 'top'
+    });
+    LoginPage.sede = this.auxSede
+    if (LoginPage.sede.length > 0) {
+      this.loginService.login(this.account).then(
+        () => {
+          this.navController.navigateRoot('/tabs');
+        },
+        err => {
+          // Unable to log in
+          this.account.password = '';
+          this.auxSede = '';
+          toast.present();
+        }
+      );
+    } else {
+      this.account.password = '';
+      this.auxSede = '';
+      toast.present();
+    }
+
   }
 }
