@@ -14,17 +14,8 @@ import { Account } from 'src/model/account.model';
 export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
-  mensaje:any = "Escanea tu QR en el lector"
-  identificadorTorniquete: any = '1502,0'
+  identificadorTorniquete: any = '1502,1'
   sedeTorniquete : any = []
-  MiembroQR: { idUsuario: any; estado: any; } = {
-    idUsuario: '',
-    estado: '',
-  };
-
-  InvitadoQR: { idInvitado: any } = {
-    idInvitado: '',
-  };
 
 
   constructor(
@@ -121,8 +112,6 @@ export class HomePage implements OnInit {
 
   /* Validacion Miembros */
   validarMiembro(idUsuario, estadoQR) {
-    this.MiembroQR.idUsuario = idUsuario
-    this.MiembroQR.estado = estadoQR
     this.miembrosService.findById(idUsuario).subscribe(
       success => {
         let auxMiembro = success.body['0']
@@ -202,16 +191,8 @@ export class HomePage implements OnInit {
 
   /* Validacion Invitados */
   validarInvitado(idInvitado) {
-    this.InvitadoQR.idInvitado = idInvitado
-    console.log(this.InvitadoQR)
-  }
-
-  onKeypressEvent(event: any){
-    console.log("event.target.value",event.target.value);
-    let donut = document.getElementById('donut');
-    let qrimg = document.getElementById('qr-img');
-    donut.classList.remove('hidden');
-    qrimg.classList.add('hidden');
+    
+    console.log(idInvitado)
   }
 
 }
