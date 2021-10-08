@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { ComponentesModule } from 'src/app/componentes/componentes.module';
 import { UserRouteAccessService } from 'src/app/services/auth/user-route-access.service';
 import { HomePage } from './home.page';
 
@@ -19,7 +20,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [IonicModule, CommonModule, FormsModule, TranslateModule, RouterModule.forChild(routes)],
+  imports: [
+    IonicModule, 
+    CommonModule, 
+    FormsModule, 
+    TranslateModule, 
+    ComponentesModule,
+    RouterModule.forChild(routes)],
   declarations: [HomePage]
 })
 export class HomePageModule {}

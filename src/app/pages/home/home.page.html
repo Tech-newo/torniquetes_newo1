@@ -1,4 +1,4 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar>
     <ion-title>
       {{ 'WELCOME_TITLE' | translate }}, {{account?.firstName}}
@@ -10,15 +10,14 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<ion-content class="ion-padding">
-
-
- <ion-item>
-  <ion-label>Input QR</ion-label>
-  <ion-input [(ngModel)]="codigoQR" clear-input="clearInput" enterkeyhint="search"  (keyup.enter)="obtenerCodigoQR()"></ion-input>
-</ion-item>
+<div class="container ion-padding"> 
   
+ <app-donut></app-donut>
 
-</ion-content>
+ <div class="inputQR inputQR-2">
+    <ion-input color="transparent" autofocus="true" [(ngModel)]="codigoQR" clear-input="clearInput" enterkeyhint="search"  (keyup.enter)="obtenerCodigoQR()"></ion-input>
+ </div>
+
+</div>
