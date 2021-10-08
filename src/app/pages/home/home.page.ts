@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { EntradaMiembrosService } from 'src/app/services/entradaMiembros/entrada-miembros.service';
 import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { Account } from 'src/model/account.model';
 
@@ -25,7 +26,8 @@ export class HomePage implements OnInit {
 
   constructor(
     public navController: NavController,
-    public miembrosService : MiembrosService
+    public miembrosService : MiembrosService,
+    public entradaMiembrosService : EntradaMiembrosService,
   ) { }
 
   ngOnInit() {
@@ -42,7 +44,12 @@ export class HomePage implements OnInit {
       if (this.codigoQR[0] == 1) {
         // 3. Validar vigencia Qr
         if (this.codigoQrVigente(this.codigoQR[4])) {
-          this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
+          // 4. codigoQr corresponde al torniquete 
+          if ( this.codigoCorrespondiente(this.codigoQR[3])) {
+            this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
+          } else {
+            console.log(`codigoQr de ${this.codigoQR[3] ? 'salida' : 'entrada'} no corresponde con el torniquete de ${this.identificadorTorniquete['1'] ? 'entrada' : 'salida'} `)
+          }
         } else {
           console.log('codigoQr de miembro no vigente')
         }
@@ -60,6 +67,10 @@ export class HomePage implements OnInit {
     return (this.identificadorTorniquete[0] === sedeCogdigo)
   }
 
+  codigoCorrespondiente(estadoCogdigo) {
+    return (this.identificadorTorniquete[1] === estadoCogdigo)
+  }
+
   codigoQrVigente(validesQR) {
     var time = new Date(Number(validesQR))
     let now = new Date()
@@ -74,25 +85,57 @@ export class HomePage implements OnInit {
   }
 
   /* Validacion Miembros */
-  validarMiembro(idUsuario, estado) {
+  validarMiembro(idUsuario, estadoQR) {
     this.MiembroQR.idUsuario = idUsuario
-    this.MiembroQR.estado = estado
+    this.MiembroQR.estado = estadoQR
     this.miembrosService.findById(idUsuario).subscribe(
       success => {
         let auxMiembro = success.body['0']
         if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])){
+          // Consultar ultimo registro de entrada
+          this.entradaMiembrosService.findLastRegistryByUserId(auxMiembro['user']['id']).subscribe(
+            success => {
+              if (success.body['0'] !== undefined){
+                let auxEntradaMiembros = success.body['0']
+                // 1. Validar que el ultimo registro si sea del dia actual
+                let auxDateUltimoRegistro = new Date(auxEntradaMiembros['registroFecha'])
+                let auxCurrentDate = new Date(Date.now())
+                if (auxDateUltimoRegistro.getDate() == auxCurrentDate.getDate() && auxDateUltimoRegistro.getMonth() == auxCurrentDate.getMonth()) {
+                  // 2.1 registros en el dia actual
+                  if(estadoQR  == (auxEntradaMiembros['salida'] ? '0' : '1')){
+                    // Qr i/o coherente con el ultimo registro => Registrar i/o
+                    this.registrarEntradaMiembro(auxEntradaMiembros)
 
+                  } else {
+                    console.log(`no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`)
+                  }
+                } else {
+                  // 2.2 primer registro del dia => Registrar Entrada
+                  this.registrarEntradaMiembro()
+                }
+              } else {
+                // primer registro historico => Registrar Entrada
+                this.registrarEntradaMiembro()
+              }
+            }, error => {
+              console.error(error)
+            }
+          )
         } else {
           console.log('El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado')
         }
       }, error => {
-        console.log(error)
+        console.error(error)
       }
     )
   }
 
   accesoPermitidoMiembro(nivel, activo) {
     return (nivel && activo)
+  }
+
+  registrarEntradaMiembro(auxDateUltimoRegistro?){
+    console.log('this.registrarEntradaMiembro',auxDateUltimoRegistro)
   }
 
 
