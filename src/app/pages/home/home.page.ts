@@ -14,6 +14,7 @@ import { Account } from 'src/model/account.model';
 export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
+  mensaje:any = "Escanea tu QR en el lector"
   identificadorTorniquete: any = '1502,0'
   sedeTorniquete : any = []
   MiembroQR: { idUsuario: any; estado: any; } = {
@@ -178,6 +179,14 @@ export class HomePage implements OnInit {
   validarInvitado(idInvitado) {
     this.InvitadoQR.idInvitado = idInvitado
     console.log(this.InvitadoQR)
+  }
+
+  onKeypressEvent(event: any){
+    console.log("event.target.value",event.target.value);
+    let donut = document.getElementById('donut');
+    let qrimg = document.getElementById('qr-img');
+    donut.classList.remove('hidden');
+    qrimg.classList.add('hidden');
   }
 
 }

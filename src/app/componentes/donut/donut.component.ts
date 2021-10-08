@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-donut',
@@ -6,7 +6,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./donut.component.scss'],
 })
 export class DonutComponent implements OnInit {
-
+  
+  @Input() mensaje:any="";
+  
   constructor() { }
 
   ngOnInit() {}
