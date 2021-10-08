@@ -16,7 +16,7 @@ export class HomePage implements OnInit {
   codigoQR: any = ''
   identificadorTorniquete: any = '1502,1'
   sedeTorniquete : any = []
-
+  mensaje:any = "Escanea tu QR en el lector"
 
   constructor(
     public navController: NavController,
