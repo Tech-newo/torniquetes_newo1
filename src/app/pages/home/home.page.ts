@@ -153,7 +153,9 @@ export class HomePage implements OnInit {
               // Qr i/o coherente con el ultimo registro => Registrar i/o
               this.registrarEntradaMiembro(estadoQR,auxMiembro['user'])
             } else {
-              console.log(`no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`)
+              this.mensaje=`no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`
+              console.log(this.mensaje)
+              this.reload()
             }
           } else {
             // 2.2 primer registro del dia => Registrar Entrada
