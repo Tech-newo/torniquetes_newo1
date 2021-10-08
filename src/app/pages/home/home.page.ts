@@ -81,11 +81,7 @@ export class HomePage implements OnInit {
     }
   }
 
-  reload(){
-    setTimeout(function(){ 
-      location.reload();
-    }, 3000);
-  }
+
 
   sedeCorrespondiente(sedeCogdigo) {
     return (this.identificadorTorniquete[0] === sedeCogdigo)
@@ -203,4 +199,12 @@ export class HomePage implements OnInit {
     donut.classList.remove('hidden');
     qrimg.classList.add('hidden');
   }
+
+
+  reload(){
+    setTimeout(function(){ 
+      location.reload();
+    }, 3000);
+  }
+
 }
