@@ -14,7 +14,7 @@ import { Account } from 'src/model/account.model';
 export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
-  identificadorTorniquete: any = '1502,0'
+  identificadorTorniquete: any = '1502,1'
   sedeTorniquete : any = []
   MiembroQR: { idUsuario: any; estado: any; } = {
     idUsuario: '',
@@ -156,22 +156,27 @@ export class HomePage implements OnInit {
 
   registrarEntradaMiembro(estadoQR, user){
    console.log(estadoQR, user)
-  //  let auxRegistroEntradaMiembro = this.registrarEntradaMiembro(estadoQR, user)
-  //  console.log(auxRegistroEntradaMiembro)
+   const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
+   this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
+     success => {
+       console.log ( 'registro Exitoso')
+     }, error => {
+        console.log ( 'no se ha podido generar el registro de manera exitosa, intente otra vez')
+     }
+   )
   }
 
   private registroEntradaMiembro( estadoQR, user ): EntradaMiembros {
+    let salida = (estadoQR == '1' ? true : false ) 
     return {
         ...new EntradaMiembros(),
-        registroFecha: new Date(Date.now()),
-        salida: estadoQR,
+        registroFecha: new Date(Date.now()).toISOString(),
+        salida: salida,
         tiempoMaximo: false,
         user: user,
         sede: this.sedeTorniquete,
     };
   }
-
-
 
 
   /* Validacion Invitados */
