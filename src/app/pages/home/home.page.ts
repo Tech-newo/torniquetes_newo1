@@ -67,19 +67,33 @@ export class HomePage implements OnInit {
           if ( this.codigoCorrespondiente(this.codigoQR[3])) {
             this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
           } else {
-            console.log(`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `)
+            this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
+            console.log(this.mensaje)
+            this.reload()
           }
         } else {
-          console.log('codigoQr de miembro no vigente')
+          this.mensaje='codigoQr de miembro no vigente'
+          console.log(this.mensaje)
+          this.reload()
         }
       } else if (this.codigoQR[0] == 2) {
         this.validarInvitado(this.codigoQR[1])
       } else {
-        console.log('codigoQr no valido')
+        this.mensaje='codigoQr no valido'
+        console.log(this.mensaje)
+        this.reload()
       }
     } else {
-      console.log('la sede del codigoQR no corresponde al idSedeTorniquete')
+      this.mensaje='la sede del codigoQR no corresponde al idSedeTorniquete'
+      console.log(this.mensaje)
+      this.reload()
     }
+  }
+
+  reload(){
+    setTimeout(function(){ 
+      location.reload();
+    }, 3000);
   }
 
   sedeCorrespondiente(sedeCogdigo) {
@@ -95,7 +109,9 @@ export class HomePage implements OnInit {
     let now = new Date()
     let diffTime = (now.getTime() - time.getTime())
     var diffMins = Math.floor(((diffTime % 86400000) % 3600000) / 60000);
-    console.log('diferencia en minutos ' + diffMins)
+    this.mensaje='diferencia en minutos ' + diffMins
+    console.log(this.mensaje)
+    this.reload()
     if (diffMins <= 10) {
       return true
     } else {
@@ -113,7 +129,9 @@ export class HomePage implements OnInit {
         if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])){
           this.validarRegistroEntradaMiembro(auxMiembro,estadoQR)
         } else {
-          console.log('El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado')
+          this.mensaje='El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado'
+          console.log(this.mensaje)
+          this.reload()
         }
       }, error => {
         console.error(error)
