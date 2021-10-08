@@ -1,4 +1,6 @@
 import { BaseEntity } from 'src/model/base-entity';
+import { Invitados } from '../invitados/invitados.model';
+import { Sedes } from '../sedes/sedes.model';
 
 export class EntradaInvitados implements BaseEntity {
     constructor(
@@ -6,8 +8,8 @@ export class EntradaInvitados implements BaseEntity {
         public registroFecha?: any,
         public salida?: boolean,
         public tiempoMaximo?: boolean,
-        public sede?: any,
-        public invitado?: any,
+        public sede?: Sedes,
+        public invitado?: Invitados,
     ) {
         this.salida = false;
         this.tiempoMaximo = false;
