@@ -33,6 +33,7 @@ body{
     width: 160px;
     height: 160px;
     transform: rotate(90deg);
+    margin-bottom: 480px;
 }
 
 .box .porcentaje svg{
@@ -151,4 +152,52 @@ body{
 .container{
     margin-top: 75px;
     transform: scale(1.2);
+}
+.error{
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100vw;
+    min-height: 100vh;
+    z-index: 400;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.msg-error{
+    width: 60vw;
+    height: 120px;
+    background-color: #222222;
+    margin-bottom: 70px;
+    border-radius: 100px;
+    z-index: 500;
+    position: relative;
+}
+
+.msg-error img{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: 40px;
+}
+
+.msg-error h1{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: 130px;
+    font-weight: 400;
+    width: 40vw;
+    display: flex;
+    align-items: center;
+}
+
+.qr-img img{
+    position: absolute;
+    top: 0;
+    bottom: 180px;
+    right: 0;
+    left: 0;
+    margin: auto;
 }

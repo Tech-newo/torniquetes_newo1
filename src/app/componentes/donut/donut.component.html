@@ -8,10 +8,19 @@
     <div class="img">
       <h1>{{mensaje}}</h1>
     </div>
-    
+
+
     <div class="qr-img" id="qr-img" style="transition: 2s ease;">
-      <img src="assets/img/newo-qr.png" width="150px" style="margin-bottom: 65px;" alt="">
+      <img src="assets/img/newo-qr.png" width="150px" alt="">
     </div>
+
+    <div class="error hidden" id="msg-error">
+      <div class="msg-error" >
+        <img src="assets/img/newo-warning.png" width="50px" alt="">
+        <h1>{{mensaje}}</h1>
+      </div>
+    </div>
+    
   
     <div id="donut" class="donut hidden" style="transition: 2s ease;">
       <img class="img-donut" src="assets/img/donut-step-1.png" alt="">
