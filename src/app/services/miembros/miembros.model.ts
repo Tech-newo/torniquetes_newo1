@@ -1,4 +1,5 @@
 import { BaseEntity } from 'src/model/base-entity';
+import { User } from '../user/user.model';
 
 export const enum TipoDocumentod {
     'Cedula',
@@ -42,7 +43,7 @@ export class Miembros implements BaseEntity {
         public accesoIlimitado?: boolean,
         public aliado?: boolean,
         public host?: boolean,
-        public user?: any,
+        public user?: User,
         public nacionalidad?: any,
         public nivel?: any,
     ) { }

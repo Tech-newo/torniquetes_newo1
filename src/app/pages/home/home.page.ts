@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
-import { MiembrosService } from 'src/app/services/miembros/miembros-services.service';
+import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { Account } from 'src/model/account.model';
 
 @Component({

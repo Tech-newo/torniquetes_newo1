@@ -14,5 +14,4 @@ export class MiembrosService {
     return this.http.get(`${this.resourceUrl}?id.equals=${userId}&page=0&size=1&sort=id,desc`, { observe: 'response' });
   }
 
-
 }
