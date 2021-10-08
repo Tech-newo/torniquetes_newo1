@@ -195,4 +195,12 @@ export class HomePage implements OnInit {
     console.log(idInvitado)
   }
 
+
+  onKeypressEvent(event: any){
+    console.log("event.target.value",event.target.value);
+    let donut = document.getElementById('donut');
+    let qrimg = document.getElementById('qr-img');
+    donut.classList.remove('hidden');
+    qrimg.classList.add('hidden');
+  }
 }
