@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { MiembrosService } from 'src/app/services/miembros/miembros-services.service';
 import { Account } from 'src/model/account.model';
-import { AccountService } from '../../services/auth/account.service';
-import { LoginService } from '../../services/login/login.service';
-import { LoginPage } from '../login/login.page';
 
 @Component({
   selector: 'app-home',
@@ -27,6 +25,7 @@ export class HomePage implements OnInit {
 
   constructor(
     public navController: NavController,
+    public miembrosService : MiembrosService
   ) { }
 
   ngOnInit() {
@@ -34,7 +33,7 @@ export class HomePage implements OnInit {
   }
 
 
-  // obtener el código de QR de la entrada
+  /* Validacion Inicial */
   obtenerCodigoQR() {
     this.codigoQR = this.codigoQR.split(',')
     // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
@@ -74,15 +73,31 @@ export class HomePage implements OnInit {
     }
   }
 
+  /* Validacion Miembros */
   validarMiembro(idUsuario, estado) {
     this.MiembroQR.idUsuario = idUsuario
     this.MiembroQR.estado = estado
-    console.log(this.MiembroQR)
+    this.miembrosService.findById(idUsuario).subscribe(
+      success => {
+        let auxMiembro = success.body['0']
+        if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])){
+
+        } else {
+          console.log('El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado')
+        }
+      }, error => {
+        console.log(error)
+      }
+    )
+  }
+
+  accesoPermitidoMiembro(nivel, activo) {
+    return (nivel && activo)
   }
 
 
 
-
+  /* Validacion Invitados */
   validarInvitado(idInvitado) {
     this.InvitadoQR.idInvitado = idInvitado
     console.log(this.InvitadoQR)
