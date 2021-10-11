@@ -29,45 +29,21 @@ body{
     width: 160px;
     height: 160px;
     transform: rotate(90deg);
+    // z-index: 100000;
 }
 
 .box .porcentaje svg{
     transform: scale(1.5);
     position: relative;
     /* border: solid firebrick; */
-    width: 80%;
+    width: 100%;
     height: 100%;
 
-}
-.box .porcentaje svg circle:nth-child(1){
-    stroke-dashoffset: 0;
-    /* stroke: linear-gradient(from 270deg, #ff4800 10%, #dfd902 35%, #20dc68, #0092f4, #da54d8 72% 75%, #ff4800 95%);; */
-}
-
-.box .porcentaje svg .circle2{
-    stroke-dashoffset: calc(440px - (100px * var(--donut-value-medicion)) / 100);
-    animation: loading 1s ease;
-    /* stroke: red; */
-}
-.box .porcentaje svg .circle3{
-    stroke-dashoffset: calc(440px - (200px * var(--donut-value-medicion)) / 100);
-    animation: loading 1s ease;
-    /* stroke: red; */
-}
-.box .porcentaje svg .circle4{
-    stroke-dashoffset: calc(440px - (300px * var(--donut-value-medicion)) / 100);
-    animation: loading 1s ease;
-    /* stroke: red; */
-}
-.box .porcentaje svg .circle5{
-    stroke-dashoffset: calc(40px - (400px * var(--donut-value-medicion)) / 100);
-    animation: loading 1s ease;
-    /* stroke: red; */
 }
 
 .box .porcentaje svg circle{
     fill: none;
-    stroke-width: 15;
+    stroke-width: 12;
     /* // stroke: #0c0c0c; */
     transform: rotate(0deg);
     transform: translate(10px,10px); 
@@ -76,6 +52,40 @@ body{
     stroke-linecap:round;
     transition: 2s;
 }
+
+.box .porcentaje svg circle:nth-child(1){
+    /* stroke: linear-gradient(from 270deg, #ff4800 10%, #dfd902 35%, #20dc68, #0092f4, #da54d8 72% 75%, #ff4800 95%);; */
+    stroke-dashoffset: calc(440px - (0 * var(--donut-value-medicion)) / 100);
+    z-index: 100000;
+}
+
+.box .porcentaje svg .circle2{
+    stroke-dashoffset: calc(440px - (440px * var(--donut-value-medicion)) / 100);
+    animation: loading 1s ease;
+    /* stroke: red; */
+}
+
+.box .porcentaje svg .circle3{
+    stroke-dashoffset: 10;
+    /* stroke: linear-gradient(from 270deg, #ff4800 10%, #dfd902 35%, #20dc68, #0092f4, #da54d8 72% 75%, #ff4800 95%);; */
+    stroke-width: 13;
+    stroke-dashoffset: calc(440px - (440px * var(--donut-value-medicion)) / 100);
+}
+.box .porcentaje svg .circle4{
+    stroke-dashoffset: 10;
+    /* stroke: linear-gradient(from 270deg, #ff4800 10%, #dfd902 35%, #20dc68, #0092f4, #da54d8 72% 75%, #ff4800 95%);; */
+    stroke-width: 13;
+    stroke-dashoffset: calc(440px - (440px * var(--donut-value-medicion)) / 100);
+    // display: none;
+}
+.box .porcentaje svg .circlef{
+    stroke-dashoffset: 10;
+    /* stroke: linear-gradient(from 270deg, #ff4800 10%, #dfd902 35%, #20dc68, #0092f4, #da54d8 72% 75%, #ff4800 95%);; */
+    stroke-width: 13;
+    stroke-dashoffset: calc(440px - (-220px * var(--donut-value-medicion)) / 100);
+}
+
+
 .img{
     width: 100px;
     height: 100px;

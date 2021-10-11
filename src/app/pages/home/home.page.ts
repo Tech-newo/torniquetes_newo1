@@ -14,7 +14,7 @@ import { Account } from 'src/model/account.model';
 export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
-  identificadorTorniquete: any = '1502,1'
+  identificadorTorniquete: any = '1502,0'
   sedeTorniquete : any = []
   mensaje:any = "Escanea tu QR en el lector"
 
