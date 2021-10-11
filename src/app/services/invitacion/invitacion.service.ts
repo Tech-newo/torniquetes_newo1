@@ -18,4 +18,8 @@ export class InvitacionService {
         return this.http.get<Invitacion>(`${this.resourceUrl}?invitadoId.equals=${idInvitado}&page=0&sort=id,desc`, { observe: 'response'});
     }
 
+    findById(id : number): Observable<HttpResponse<Invitacion>> {
+        return this.http.get<Invitacion>(`${this.resourceUrl}?id.equals=${id}&page=0&size=1&&sort=id,desc`, { observe: 'response'});
+    }
+
 }

@@ -14,12 +14,8 @@ export class EntradaInvitadosService {
         return this.http.post<EntradaInvitados>(this.resourceUrl, entradaInvitados, { observe: 'response'});
     }
 
-    find(id: number): Observable<HttpResponse<EntradaInvitados>> {
-        return this.http.get(`${this.resourceUrl}/${id}`, { observe: 'response'});
-    }
-
-    findByFechaRegistro(id:number,fechaRegistroMayor:string,fechaRegistroMenor:string): Observable<HttpResponse<EntradaInvitados[]>> {
-        return this.http.get<EntradaInvitados[]>(`${this.resourceUrl}?invitadoId.equals=${id}&sort=id,desc&registroFecha.greaterThanOrEqual=${fechaRegistroMenor}T05:00:00Z&registroFecha.lessThan=${fechaRegistroMayor}T04:59:59Z`, { observe: 'response'});
+    findLastRegistryByGuestId(id:number): Observable<HttpResponse<EntradaInvitados>> {
+        return this.http.get(`${this.resourceUrl}?invitadoId.equals=${id}&page=0&size=1&sort=id,desc`, { observe: 'response'});
     }
 
 }
