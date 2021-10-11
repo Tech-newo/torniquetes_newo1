@@ -52,18 +52,31 @@ export class HomePage implements OnInit {
     if (this.sedeCorrespondiente(this.codigoQR[2])) {
       this.mensaje=`Paso 1`
       this.loadDonut()
-      // 2. Validar el tipo de Qr y registrar sus datos
+
+      let circle = document.getElementById('circle2');
+      setTimeout(function(){ 
+        circle.classList.remove('circle2');
+        circle.classList.add('circle3');
+      }, 500);
+      
+        // 2. Validar el tipo de Qr y registrar sus datos
       if (this.codigoQR[0] == 1) {
+        setTimeout(function(){ 
+          circle.classList.remove('circle3');
+          circle.classList.add('circle4');
+        }, 500);
         this.mensaje=`Paso 2`
-        this.loadDonut()
         // 3. Validar vigencia Qr
         if (this.codigoQrVigente(this.codigoQR[4])) {
+          setTimeout(function(){ 
+            circle.classList.remove('circle4');
+            circle.classList.add('circle5');
+          }, 500);
           this.mensaje=`Paso 3`
-          this.loadDonut()
           // 4. codigoQr corresponde al torniquete 
           if ( this.codigoCorrespondiente(this.codigoQR[3])) {
             this.mensaje=`Paso 4 miembro`
-            this.loadDonut()
+            
             this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
           } else {
             this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
@@ -218,16 +231,16 @@ export class HomePage implements OnInit {
   loadDonutError(){
     let donut = document.getElementById('donut');
     let qrimg = document.getElementById('qr-img');
-    let msgerror = document.getElementById('msg-error');
+    let error = document.getElementById('error');
     donut.classList.add('hidden');
     qrimg.classList.add('hidden');
-    msgerror.classList.remove('hidden');
+    error.classList.remove('hidden');
   }
 
   loadDonut(){
     let donut = document.getElementById('donut');
     let qrimg = document.getElementById('qr-img');
-    let msgerror = document.getElementById('msg-error');
+    let msgerror = document.getElementById('error');
     donut.classList.remove('hidden');
     qrimg.classList.add('hidden');
     msgerror.classList.add('hidden');

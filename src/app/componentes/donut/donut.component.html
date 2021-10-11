@@ -10,25 +10,25 @@
     </div>
 
 
-    <div class="qr-img" id="qr-img" style="transition: 2s ease;">
+    <div class="qr-img  " id="qr-img" >
       <img src="assets/img/newo-qr.png" width="150px" alt="">
     </div>
 
-    <div class="error hidden" id="msg-error">
-      <div class="msg-error" >
+    <div class="error hidden" id="error">
+      <div class="msg-error">
         <img src="assets/img/newo-warning.png" width="50px" alt="">
         <h1>{{mensaje}}</h1>
       </div>
     </div>
     
   
-    <div id="donut" class="donut hidden" style="transition: 2s ease;">
+    <div id="donut" class="donut hidden" >
       <img class="img-donut" src="assets/img/donut-step-1.png" alt="">
-    
+
       <div class="porcentaje ">
           <svg>
               <circle cx="70" cy="70" r=70 stroke="#121212"></circle>
-              <circle cx="70" cy="70" r=70 stroke="url(#Gradient1)"></circle>
+              <circle id="circle2" class="circle2" cx="70" cy="70" r=70 stroke="url(#Gradient1)"></circle>
               <defs>
                   <linearGradient id="Gradient1" gradientTransform="rotate(0)">
                       <stop offset="0%" stop-color="#121212"/>
