@@ -1,17 +1,12 @@
 *{
     padding: 0;
     margin: 0;
-    --donut-value:0;
 }
 
 body{
     background-color: black;
 }
 
-.hidden{
-    display: none;
-    visibility: hidden;
-}
 
 .box{
     position: relative;
@@ -25,6 +20,7 @@ body{
     flex-direction: column;
     /* border: solid red; */
     padding-bottom: 120px;
+    animation: scale 1s ease;
 }
 
 .box .porcentaje{
@@ -48,8 +44,23 @@ body{
     /* stroke: linear-gradient(from 270deg, #ff4800 10%, #dfd902 35%, #20dc68, #0092f4, #da54d8 72% 75%, #ff4800 95%);; */
 }
 
-.box .porcentaje svg circle:nth-child(2){
-    stroke-dashoffset: calc(440px - (440px * var(--donut-value)) / 100);
+.box .porcentaje svg .circle2{
+    stroke-dashoffset: calc(440px - (100px * var(--donut-value-medicion)) / 100);
+    animation: loading 1s ease;
+    /* stroke: red; */
+}
+.box .porcentaje svg .circle3{
+    stroke-dashoffset: calc(440px - (200px * var(--donut-value-medicion)) / 100);
+    animation: loading 1s ease;
+    /* stroke: red; */
+}
+.box .porcentaje svg .circle4{
+    stroke-dashoffset: calc(440px - (300px * var(--donut-value-medicion)) / 100);
+    animation: loading 1s ease;
+    /* stroke: red; */
+}
+.box .porcentaje svg .circle5{
+    stroke-dashoffset: calc(40px - (400px * var(--donut-value-medicion)) / 100);
     animation: loading 1s ease;
     /* stroke: red; */
 }
@@ -88,6 +99,7 @@ body{
     right: 0;
     margin: auto;
     top: 75px;
+    animation: scaleDonut .8s ease infinite;
 }
 
 .img h1{
@@ -151,4 +163,78 @@ body{
 .container{
     margin-top: 75px;
     transform: scale(1.2);
+}
+.error{
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100vw;
+    min-height: 100vh;
+    z-index: 400;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hidden{
+    display: none;
+    visibility: hidden;
+    transform: scale(0);
+}
+
+.msg-error{
+    width: 60vw;
+    height: 120px;
+    background-color: #222222;
+    margin-bottom: 70px;
+    border-radius: 100px;
+    z-index: 500;
+    position: relative;
+    animation: scale 1s ease;
+}
+
+.msg-error img{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: 40px;
+}
+
+.msg-error h1{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: 130px;
+    font-weight: 400;
+    width: 40vw;
+    display: flex;
+    align-items: center;
+}
+
+.qr-img img{
+    position: absolute;
+    top: 0;
+    bottom: 180px;
+    right: 0;
+    left: 0;
+    margin: auto;
+}
+
+
+@keyframes scale {
+    0%{
+        transform: scale(0);
+    }
+    100%{
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleDonut {
+    0%{
+        transform: scale(.95);
+    }
+    100%{
+        transform: scale(1);
+    }
 }

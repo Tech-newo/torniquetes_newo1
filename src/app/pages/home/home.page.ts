@@ -57,32 +57,59 @@ export class HomePage implements OnInit {
     this.codigoQR = this.codigoQR.split(',')
     // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
     if (this.sedeCorrespondiente(this.codigoQR[2])) {
-      // 2. Validar el tipo de Qr y registrar sus datos
+      this.mensaje=`Paso 1`
+      this.loadDonut()
+
+      let circle = document.getElementById('circle2');
+      setTimeout(function(){ 
+        circle.classList.remove('circle2');
+        circle.classList.add('circle3');
+      }, 500);
+      
+        // 2. Validar el tipo de Qr y registrar sus datos
       if (this.codigoQR[0] == 1) {
+        setTimeout(function(){ 
+          circle.classList.remove('circle3');
+          circle.classList.add('circle4');
+        }, 500);
+        this.mensaje=`Paso 2`
         // 3. Validar vigencia Qr
         if (this.codigoQrVigente(this.codigoQR[4])) {
+          setTimeout(function(){ 
+            circle.classList.remove('circle4');
+            circle.classList.add('circle5');
+          }, 500);
+          this.mensaje=`Paso 3`
           // 4. codigoQr corresponde al torniquete 
           if ( this.codigoCorrespondiente(this.codigoQR[3])) {
+            this.mensaje=`Paso 4 miembro`
+            
             this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
           } else {
             this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
+            this.loadDonutError()
             console.log(this.mensaje)
             this.reload()
           }
         } else {
           this.mensaje='codigoQr de miembro no vigente'
+          this.loadDonutError()
           console.log(this.mensaje)
           this.reload()
         }
       } else if (this.codigoQR[0] == 2) {
+        this.mensaje=`Paso 4 invitado`
+        this.loadDonut()
         this.validarInvitado(this.codigoQR[1])
       } else {
         this.mensaje='codigoQr no valido'
+        this.loadDonutError()
         console.log(this.mensaje)
         this.reload()
       }
     } else {
       this.mensaje='la sede del codigoQR no corresponde al idSedeTorniquete'
+      this.loadDonutError()
       console.log(this.mensaje)
       this.reload()
     }
@@ -119,6 +146,7 @@ export class HomePage implements OnInit {
           this.validarRegistroEntradaMiembro(auxMiembro,estadoQR)
         } else {
           this.mensaje='El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado'
+          this.loadDonutError()
           console.log(this.mensaje)
           this.reload()
         }
@@ -144,6 +172,7 @@ export class HomePage implements OnInit {
             } else {
               this.mensaje=`no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`
               console.log(this.mensaje)
+              this.loadDonutError()
               this.reload()
             }
           } else {
@@ -168,9 +197,14 @@ export class HomePage implements OnInit {
    const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
    this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
      success => {
-       console.log ( 'registro Exitoso')
-     }, error => {
-        console.log ( 'no se ha podido generar el registro de manera exitosa, intente otra vez')
+      this.mensaje=`registro Exitoso`
+      this.loadDonut()
+      this.reload()
+    }, error => {
+      this.mensaje='no se ha podido generar el registro de manera exitosa, intente otra vez'
+      console.log(this.mensaje)
+      this.loadDonutError()
+      this.reload()
      }
    )
   }
@@ -308,10 +342,24 @@ export class HomePage implements OnInit {
   /* Controladores de vista */
   onKeypressEvent(event: any){
     console.log("event.target.value",event.target.value);
+  }
+
+  loadDonutError(){
     let donut = document.getElementById('donut');
     let qrimg = document.getElementById('qr-img');
+    let error = document.getElementById('error');
+    donut.classList.add('hidden');
+    qrimg.classList.add('hidden');
+    error.classList.remove('hidden');
+  }
+
+  loadDonut(){
+    let donut = document.getElementById('donut');
+    let qrimg = document.getElementById('qr-img');
+    let msgerror = document.getElementById('error');
     donut.classList.remove('hidden');
     qrimg.classList.add('hidden');
+    msgerror.classList.add('hidden');
   }
 
   reload(){

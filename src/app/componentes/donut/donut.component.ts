@@ -11,6 +11,15 @@ export class DonutComponent implements OnInit {
   
   constructor() { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    let rootElement = document.documentElement;
+    rootElement.style.setProperty("--donut-value-medicion", '0');
+
+    const donutVal = "100";
+    setTimeout(function(){ 
+      console.log("valueDonut",donutVal)
+      rootElement.style.setProperty("--donut-value-medicion", donutVal);
+    }, 1000);
+  }
 
 }
