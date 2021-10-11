@@ -10,8 +10,12 @@ export class MiembrosService {
 
   constructor(protected http: HttpClient) { }
 
-  findById(userId: number): Observable<HttpResponse<Miembros>> {
-    return this.http.get(`${this.resourceUrl}?id.equals=${userId}&page=0&size=1&sort=id,desc`, { observe: 'response' });
+  findById(memberId: number): Observable<HttpResponse<Miembros>> {
+    return this.http.get(`${this.resourceUrl}?id.equals=${memberId}&page=0&size=1&sort=id,desc`, { observe: 'response' });
+  }
+
+  findByUserId(userId: number): Observable<HttpResponse<Miembros>> {
+    return this.http.get(`${this.resourceUrl}?userId.equals=${userId}&page=0&size=1&sort=id,desc`, { observe: 'response' });
   }
 
 }

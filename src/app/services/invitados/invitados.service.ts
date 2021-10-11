@@ -22,8 +22,8 @@ export class InvitadosService {
         return this.http.get<Invitados[]>(`${this.resourceUrl}?userId.equals=${id}&sort=id,desc`, { observe: 'response'});
     }
     
-    findGuests(page:number,userId:number): Observable<HttpResponse<Invitados[]>> {
-        return this.http.get<Invitados[]>(`${this.resourceUrl}?userId.equals=${userId}&page=${page}&size=20&sort=nombre,asc`, { observe: 'response'});
+    findById(id:number): Observable<HttpResponse<Invitados[]>> {
+        return this.http.get<Invitados[]>(`${this.resourceUrl}?id.equals=${id}&page=$0&size=1&sort=id,asc`, { observe: 'response'});
     }
 
 
