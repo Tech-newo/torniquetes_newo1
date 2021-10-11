@@ -92,6 +92,16 @@ body{
     animation: scaleDonut .8s ease infinite;
 }
 
+.scale-out{
+    animation: scaleOut 2s ease-out;
+}
+
+.scale-in{
+    animation: scaleIn 1s ease-out;
+    transform: scale(2.2);
+    z-index: 100;
+}
+
 .img h1{
     font-family: Arial, Helvetica, sans-serif;
     font-size: 15pt;
@@ -226,5 +236,26 @@ body{
     }
     100%{
         transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    0%{
+        transform: scale(1);
+    }
+    100%{
+        transform: scale(0);
+    }
+}
+
+
+@keyframes scaleIn {
+    0%{
+        opacity: 0;
+        transform: scale(0);
+    }
+    100%{
+        opacity: 1;
+        transform: scale(2.2);
     }
 }

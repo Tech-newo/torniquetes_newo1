@@ -20,8 +20,8 @@ export class HomePage implements OnInit {
   codigoQR: any = ''
   identificadorTorniquete: any = '1502,1'
   sedeTorniquete : any = []
-  mensaje:any = "Escanea tu QR en el lector"
-
+  mensaje:any = "Escanea tu QR en el lector"  
+  img:any=""
   constructor(
     public navController: NavController,
     public sedesService : SedesService,
@@ -34,6 +34,8 @@ export class HomePage implements OnInit {
   ) { }
 
   ngOnInit() {
+    
+    this.img = "assets/img/donut-step-1.png"
     this.identificadorTorniquete = this.identificadorTorniquete.split(',')
     this.consultarSede(this.identificadorTorniquete['0'])
   }
@@ -181,7 +183,6 @@ export class HomePage implements OnInit {
      success => {
       this.valueDonut("100")
       this.mensaje=`registro Exitoso`
-      this.reload()
     }, error => {
       this.mensaje='no se ha podido generar el registro de manera exitosa, intente otra vez'
       console.log(this.mensaje)
@@ -318,10 +319,8 @@ export class HomePage implements OnInit {
       success => {
         this.valueDonut("100")
         this.mensaje=`registro Exitoso`
-        console.log ( 'registro Exitoso')
-        this.reload()
-
-      }, error => {
+        this.successDonut()
+        }, error => {
          console.log ( 'no se ha podido generar el registro de manera exitosa, intente otra vez')
       }
     )
@@ -367,11 +366,9 @@ export class HomePage implements OnInit {
       msgerror.classList.add('hidden');
   }
 
-  reload(){
-    setTimeout(function(){ 
-      location.reload();
-    }, 3000);
-  }
+
+
+
 
   valueDonut(val){
     let rootElement = document.documentElement;
@@ -382,4 +379,35 @@ export class HomePage implements OnInit {
       }, 200);
   }
 
+  successDonut(){
+
+    // console.log("Hola mundo")
+    let donut = document.getElementById('porcentaje');
+    let imgdonut = document.getElementById('img-donut');
+    let msgdonut = document.getElementById('msg-donut');
+    this.img = "assets/img/donut-step-5.png"
+
+    setTimeout(function(){ 
+      imgdonut.classList.add('scale-out');
+      donut.classList.add('scale-out');
+    }, 1600);
+
+
+    setTimeout(function(){ 
+      imgdonut.classList.add('scale-in')
+      msgdonut.classList.add('scale-out');
+    }, 2050);
+
+    setTimeout(function(){ 
+      msgdonut.classList.add('hidden')
+      donut.classList.add('hidden')
+    }, 2200);
+    this.reload()
+  }
+
+  reload(){
+    setTimeout(function(){ 
+      location.reload();
+    }, 3000);
+  }
 }
