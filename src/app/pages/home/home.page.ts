@@ -18,7 +18,7 @@ import { Account } from 'src/model/account.model';
 export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
-  identificadorTorniquete: any = '1502,0'
+  identificadorTorniquete: any = '1502,1'
   sedeTorniquete : any = []
   mensaje:any = "Escanea tu QR en el lector"
 
@@ -59,59 +59,43 @@ export class HomePage implements OnInit {
     if (this.sedeCorrespondiente(this.codigoQR[2])) {
       this.mensaje=`Paso 1`
       this.loadDonut()
-
-      let circle = document.getElementById('circle2');
-      setTimeout(function(){ 
-        circle.classList.remove('circle2');
-        circle.classList.add('circle3');
-      }, 500);
-      
-        // 2. Validar el tipo de Qr y registrar sus datos
+      this.valueDonut("25")
+      // 2. Validar el tipo de Qr y registrar sus datos
       if (this.codigoQR[0] == 1) {
-        setTimeout(function(){ 
-          circle.classList.remove('circle3');
-          circle.classList.add('circle4');
-        }, 500);
         this.mensaje=`Paso 2`
+        this.valueDonut("35")
         // 3. Validar vigencia Qr
         if (this.codigoQrVigente(this.codigoQR[4])) {
-          setTimeout(function(){ 
-            circle.classList.remove('circle4');
-            circle.classList.add('circle5');
-          }, 500);
           this.mensaje=`Paso 3`
+          this.valueDonut("65")
           // 4. codigoQr corresponde al torniquete 
           if ( this.codigoCorrespondiente(this.codigoQR[3])) {
             this.mensaje=`Paso 4 miembro`
-            
+            this.valueDonut("75")
             this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
           } else {
             this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
             this.loadDonutError()
             console.log(this.mensaje)
-            this.reload()
           }
         } else {
           this.mensaje='codigoQr de miembro no vigente'
           this.loadDonutError()
           console.log(this.mensaje)
-          this.reload()
         }
       } else if (this.codigoQR[0] == 2) {
         this.mensaje=`Paso 4 invitado`
-        this.loadDonut()
+        this.valueDonut("75")
         this.validarInvitado(this.codigoQR[1])
       } else {
         this.mensaje='codigoQr no valido'
         this.loadDonutError()
         console.log(this.mensaje)
-        this.reload()
       }
     } else {
       this.mensaje='la sede del codigoQR no corresponde al idSedeTorniquete'
       this.loadDonutError()
       console.log(this.mensaje)
-      this.reload()
     }
   }
 
@@ -148,7 +132,6 @@ export class HomePage implements OnInit {
           this.mensaje='El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado'
           this.loadDonutError()
           console.log(this.mensaje)
-          this.reload()
         }
       }, error => {
         console.error(error)
@@ -173,7 +156,6 @@ export class HomePage implements OnInit {
               this.mensaje=`no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`
               console.log(this.mensaje)
               this.loadDonutError()
-              this.reload()
             }
           } else {
             // 2.2 primer registro del dia => Registrar Entrada
@@ -197,14 +179,13 @@ export class HomePage implements OnInit {
    const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
    this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
      success => {
+      this.valueDonut("100")
       this.mensaje=`registro Exitoso`
-      this.loadDonut()
       this.reload()
     }, error => {
       this.mensaje='no se ha podido generar el registro de manera exitosa, intente otra vez'
       console.log(this.mensaje)
       this.loadDonutError()
-      this.reload()
      }
    )
   }
@@ -239,20 +220,28 @@ export class HomePage implements OnInit {
                       // miembro con acceso permitido
                       this.validarEntradaInvitado(auxInvitacion)
                     } else {
-                      console.log('El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado')
+                      this.mensaje='El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado'
+                      this.loadDonutError()
+                      console.log(this.mensaje)
                     }
                   }, error => {
                     console.error(error)
                   }
                 )
               } else {
-                console.log('la invitacion no corresponde al idSedeTorniquete')
+                this.mensaje='la invitacion no corresponde al idSedeTorniquete'
+                this.loadDonutError()
+                console.log(this.mensaje)
               }
             } else {
-              console.log(' la invitacion no es vigente, intenta con otro codigo Qr')
+              this.mensaje='la invitacion no es vigente, intenta con otro codigo Qr'
+              this.loadDonutError()
+              console.log(this.mensaje)
             }
           } else {
-            console.log(' la invitacion no es valida, intenta con otro codigo Qr')
+            this.mensaje='la invitacion no es valida, intenta con otro codigo Qr'
+            this.loadDonutError()
+            console.log(this.mensaje)
           }
         }, error => {
           console.error(error)
@@ -274,7 +263,9 @@ export class HomePage implements OnInit {
             if(this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida'])){
               this.registrarEntradaInvitado(!auxEntradaInvitado['salida'], auxEntradaInvitado['invitado'])
             } else {
-              console.log(`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`)
+              this.mensaje=`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`
+              console.log(this.mensaje)
+              this.loadDonutError()
             }
           } else {
             // 2.2 primer registro del dia => Registrar Entrada
@@ -282,7 +273,9 @@ export class HomePage implements OnInit {
             if(this.validarUltimoRegistroSalidaTorniquete(false)){
               this.registrarEntradaInvitado(false, auxEntradaInvitado['invitado'])
             } else {
-              console.log(`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'},  debido a que el no cuenta con un registro de ingreso`)
+              this.mensaje=`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'},  debido a que el no cuenta con un registro de ingreso`
+              console.log(this.mensaje)
+              this.loadDonutError()
             }
           }
         } else {
@@ -291,7 +284,9 @@ export class HomePage implements OnInit {
           if(this.validarUltimoRegistroSalidaTorniquete(false)){
             this.registrarEntradaInvitado(false, auxInvitacion['invitado'])
           } else {
-            console.log(`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el no cuenta con un registro de ingreso`)
+            this.mensaje=`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el no cuenta con un registro de ingreso`
+            console.log(this.mensaje)
+            this.loadDonutError()
           }
 
         }
@@ -321,7 +316,11 @@ export class HomePage implements OnInit {
     const registroEntradaInvitado = this.registroEntradaInvitado(salida, invitado)
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
       success => {
+        this.valueDonut("100")
+        this.mensaje=`registro Exitoso`
         console.log ( 'registro Exitoso')
+        this.reload()
+
       }, error => {
          console.log ( 'no se ha podido generar el registro de manera exitosa, intente otra vez')
       }
@@ -345,27 +344,42 @@ export class HomePage implements OnInit {
   }
 
   loadDonutError(){
-    let donut = document.getElementById('donut');
-    let qrimg = document.getElementById('qr-img');
-    let error = document.getElementById('error');
-    donut.classList.add('hidden');
-    qrimg.classList.add('hidden');
-    error.classList.remove('hidden');
+    let rootElement = document.documentElement;
+    rootElement.style.setProperty("--donut-value-medicion", '0');
+    setTimeout(function(){ 
+      let donut = document.getElementById('donut');
+      let qrimg = document.getElementById('qr-img');
+      let error = document.getElementById('error');
+      donut.classList.add('hidden');
+      qrimg.classList.add('hidden');
+      error.classList.remove('hidden');
+    }, 500);
+    this.reload()
+
   }
 
   loadDonut(){
-    let donut = document.getElementById('donut');
-    let qrimg = document.getElementById('qr-img');
-    let msgerror = document.getElementById('error');
-    donut.classList.remove('hidden');
-    qrimg.classList.add('hidden');
-    msgerror.classList.add('hidden');
+      let donut = document.getElementById('donut');
+      let qrimg = document.getElementById('qr-img');
+      let msgerror = document.getElementById('error');
+      donut.classList.remove('hidden');
+      qrimg.classList.add('hidden');
+      msgerror.classList.add('hidden');
   }
 
   reload(){
     setTimeout(function(){ 
       location.reload();
     }, 3000);
+  }
+
+  valueDonut(val){
+    let rootElement = document.documentElement;
+      setTimeout(function(){ 
+      const donutVal = val;
+      console.log("valueDonut",donutVal)
+        rootElement.style.setProperty("--donut-value-medicion", donutVal);
+      }, 200);
   }
 
 }
