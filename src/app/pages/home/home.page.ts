@@ -9,7 +9,6 @@ import { InvitadosService } from 'src/app/services/invitados/invitados.service';
 import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
-import { Network } from '@capacitor/network';
 import { LoginPage } from '../login/login.page';
 
 
@@ -67,10 +66,6 @@ export class HomePage implements OnInit {
     )
   }
 
-  async conexionInternet() {
-    let estadoIntenet = await Network.getStatus()
-    return estadoIntenet.connected
-  }
 
   /* Validacion Inicial */
   obtenerCodigoQR() {
@@ -438,7 +433,7 @@ export class HomePage implements OnInit {
   reload( status: boolean) {
     if (status){
       setTimeout(function () {
-        location.reload();
+        // location.reload();
       }, 3000);
     }
    
