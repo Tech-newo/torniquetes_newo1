@@ -36,7 +36,12 @@ export class HomePage implements OnInit {
   ) { }
 
   ngOnInit() {
-    // console.log("navigator.onLine",navigator.onLine)
+    if (this.identificadorTorniquete == undefined) {
+      this.identificadorTorniquete = localStorage.getItem('sede')
+    } else {
+      localStorage.setItem('sede', LoginPage.sede)
+    }
+
     if (navigator.onLine) {
       this.mensajeProcedimiento = "scanning"
       this.img = "assets/img/donut-step-1.png"
@@ -114,6 +119,7 @@ export class HomePage implements OnInit {
         console.log(this.mensaje)
       }
     } else {
+      this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexion a internet'
       this.loadDonutError(false)
     }
@@ -360,9 +366,7 @@ export class HomePage implements OnInit {
 
   /* Controladores de vista */
 
-
-  loadDonutError(status: boolean ) {
-    this.mensajeProcedimiento = "error"
+  loadDonutError(status: boolean) {
     let rootElement = document.documentElement;
     rootElement.style.setProperty("--donut-value-medicion", '0');
     setTimeout(function () {
@@ -373,10 +377,10 @@ export class HomePage implements OnInit {
       qrimg.classList.add('hidden');
       error.classList.remove('hidden');
     }, 500);
-    
-      this.reload(status)
-    
-
+    this.reload(status)
+    if (status) {
+      this.mensajeProcedimiento = "error"
+    }
   }
 
   loadDonut() {
@@ -387,10 +391,6 @@ export class HomePage implements OnInit {
     qrimg.classList.add('hidden');
     msgerror.classList.add('hidden');
   }
-
-
-
-
 
   valueDonut(val) {
     let rootElement = document.documentElement;
@@ -424,15 +424,30 @@ export class HomePage implements OnInit {
       msgdonut.classList.add('hidden')
       donut.classList.add('hidden')
     }, 2200);
-    this.reload( true )
+    this.reload(true)
   }
 
-  reload( status: boolean) {
-    if (status){
-      setTimeout(function () {
-        // location.reload();
-      }, 3000);
+  reload(status: boolean) {
+    if (navigator.onLine) {
+      if (status) {
+        setTimeout(function () {
+          location.reload();
+        }, 3000);
+      }
+    } else {
+        let i = 0;
+        setInterval(()=>{
+          if(navigator.onLine){
+            location.reload()
+          } 
+          else if(i==10){
+            this.mensajeProcedimiento = "reset"
+          }
+          else if(!navigator.onLine){
+            i++
+          }
+        }, 10000);
     }
-   
+
   }
 }
