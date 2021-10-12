@@ -25,7 +25,6 @@ export class HomePage implements OnInit {
   mensaje: any = "Escanea tu QR en el lector"
   img: any = ""
   mensajeProcedimiento: any = ""
-  refresh: Boolean = true
   constructor(
     public navController: NavController,
     public sedesService: SedesService,
@@ -76,19 +75,19 @@ export class HomePage implements OnInit {
       if (this.sedeCorrespondiente(this.codigoQR[2])) {
         this.mensaje = `Paso 1`
         this.loadDonut()
-        this.valueDonut("25")
+        this.valueDonut("15")
         // 2. Validar el tipo de Qr y registrar sus datos
         if (this.codigoQR[0] == 1) {
           this.mensaje = `Paso 2`
-          this.valueDonut("35")
+          this.valueDonut("25")
           // 3. Validar vigencia Qr
           if (this.codigoQrVigente(this.codigoQR[4])) {
             this.mensaje = `Paso 3`
-            this.valueDonut("65")
+            this.valueDonut("35")
             // 4. codigoQr corresponde al torniquete 
             if (this.codigoCorrespondiente(this.codigoQR[3])) {
               this.mensaje = `Paso 4 miembro`
-              this.valueDonut("75")
+              this.valueDonut("50")
               this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
             } else {
               this.mensaje = `codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} `
@@ -102,7 +101,7 @@ export class HomePage implements OnInit {
           }
         } else if (this.codigoQR[0] == 2) {
           this.mensaje = `Paso 4 invitado`
-          this.valueDonut("75")
+          this.valueDonut("50")
           this.validarInvitado(this.codigoQR[1])
         } else {
           this.mensaje = 'codigoQr no valido'
@@ -116,9 +115,7 @@ export class HomePage implements OnInit {
       }
     } else {
       this.mensaje = 'sin conexion a internet'
-      this.refresh = false
       this.loadDonutError(false)
-      // console.log(this.mensaje)
     }
 
   }
