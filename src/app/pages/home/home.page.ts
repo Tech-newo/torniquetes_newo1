@@ -37,11 +37,12 @@ export class HomePage implements OnInit {
 
   ngOnInit() {
     if (this.conexionInternet()) {
-      this.mensajeProcedimiento = "escanear"
+      this.mensajeProcedimiento = "scanning"
       this.img = "assets/img/donut-step-1.png"
       this.identificadorTorniquete = this.identificadorTorniquete.split(',')
       this.consultarSede(this.identificadorTorniquete['0'])
     } else {
+      this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexion a internet'
       this.loadDonutError()
       console.log(this.mensaje)
@@ -203,6 +204,7 @@ export class HomePage implements OnInit {
       success => {
         this.valueDonut("100")
         this.mensaje = `registro Exitoso`
+        this.mensajeProcedimiento = "success"
       }, error => {
         this.mensaje = 'no se ha podido generar el registro de manera exitosa, intente otra vez'
         console.log(this.mensaje)
@@ -339,6 +341,7 @@ export class HomePage implements OnInit {
       success => {
         this.valueDonut("100")
         this.mensaje = `registro Exitoso`
+        this.mensajeProcedimiento = "success"
         this.successDonut()
       }, error => {
         console.log('no se ha podido generar el registro de manera exitosa, intente otra vez')

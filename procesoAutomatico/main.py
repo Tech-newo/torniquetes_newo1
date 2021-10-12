@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import Chrome
+from time import sleep
 
 # TODO 1: set global variables
 session_started = False
@@ -44,21 +45,27 @@ def login_administrator():
 def process_data():
     message = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="outputMessage"]')))
     print(message.text)
-    if(message.text == 'registro Exitoso'):
+    if message.text == 'success':
         print('Registro Exitoso')
-        '''
-        elif (message.text == 'sin_internet'):
-          print('sin_internet')
-        '''
-    elif(message.text == 'Escanea tu QR en el lector'):
+        sleep(4)
+
+    elif message.text == 'lost connection':
+        print('sin_internet')
+        sleep(4)
+
+    elif message.text == 'scanning':
+        sleep(1)
         input_qr_code = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="qrCodeInput"]/input')))
         input_qr_code.click()
         input_qr_code.clear()
         input_qr_code.send_keys("2,121061,1502")
         input_qr_code.send_keys(Keys.ENTER)
+        sleep(4)
 
-    elif (message.text =='no es podible registrar la salida, debido a que el ultimo registro es una salida'):
+    elif message.text == 'error':
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="outputMessage"]')))
+        sleep(4)
+        
     else:
         is_internet_on = False
 
