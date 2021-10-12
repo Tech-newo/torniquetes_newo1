@@ -21,41 +21,41 @@ export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
   identificadorTorniquete: any = '1502,1'
-  sedeTorniquete : any = []
-  mensaje:any = "Escanea tu QR en el lector"  
-  img:any=""
-  mensajeProcedimiento:any=""
+  sedeTorniquete: any = []
+  mensaje: any = "Escanea tu QR en el lector"
+  img: any = ""
+  mensajeProcedimiento: any = ""
   constructor(
     public navController: NavController,
-    public sedesService : SedesService,
-    public miembrosService : MiembrosService,
-    public invitadosService : InvitadosService,
-    public entradaMiembrosService : EntradaMiembrosService,
-    public entradaInvitadosService : EntradaInvitadosService,
-    public invitacionService : InvitacionService,
+    public sedesService: SedesService,
+    public miembrosService: MiembrosService,
+    public invitadosService: InvitadosService,
+    public entradaMiembrosService: EntradaMiembrosService,
+    public entradaInvitadosService: EntradaInvitadosService,
+    public invitacionService: InvitacionService,
   ) { }
 
   ngOnInit() {
-    if (this.conexionInternet()){
-      this.mensajeProcedimiento="escanear"
+    if (this.conexionInternet()) {
+      this.mensajeProcedimiento = "escanear"
       this.img = "assets/img/donut-step-1.png"
       this.identificadorTorniquete = this.identificadorTorniquete.split(',')
       this.consultarSede(this.identificadorTorniquete['0'])
     } else {
-      this.mensaje='sin conexion a internet'
+      this.mensaje = 'sin conexion a internet'
       this.loadDonutError()
       console.log(this.mensaje)
     }
   }
 
-  consultarSede(idSede){
+  consultarSede(idSede) {
     this.sedesService.findBySedeId(idSede).subscribe(
       success => {
         if (success.body !== undefined) {
           this.sedeTorniquete = success.body['0']
         } else {
           console.log('Error_int : no se ha encontrado una sede para realizar el registro ')
-        } 
+        }
       }, error => {
         console.error(error)
       }
@@ -69,56 +69,56 @@ export class HomePage implements OnInit {
 
   /* Validacion Inicial */
   obtenerCodigoQR() {
-    if (this.conexionInternet()){
+    if (this.conexionInternet()) {
       this.codigoQR = this.codigoQR.split(',')
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
       if (this.sedeCorrespondiente(this.codigoQR[2])) {
-        this.mensaje=`Paso 1`
+        this.mensaje = `Paso 1`
         this.loadDonut()
         this.valueDonut("25")
         // 2. Validar el tipo de Qr y registrar sus datos
         if (this.codigoQR[0] == 1) {
-          this.mensaje=`Paso 2`
+          this.mensaje = `Paso 2`
           this.valueDonut("35")
           // 3. Validar vigencia Qr
           if (this.codigoQrVigente(this.codigoQR[4])) {
-            this.mensaje=`Paso 3`
+            this.mensaje = `Paso 3`
             this.valueDonut("65")
             // 4. codigoQr corresponde al torniquete 
-            if ( this.codigoCorrespondiente(this.codigoQR[3])) {
-              this.mensaje=`Paso 4 miembro`
+            if (this.codigoCorrespondiente(this.codigoQR[3])) {
+              this.mensaje = `Paso 4 miembro`
               this.valueDonut("75")
               this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
             } else {
-              this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
+              this.mensaje = `codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} `
               this.loadDonutError()
               console.log(this.mensaje)
             }
           } else {
-            this.mensaje='codigoQr de miembro no vigente'
+            this.mensaje = 'codigoQr de miembro no vigente'
             this.loadDonutError()
             console.log(this.mensaje)
           }
         } else if (this.codigoQR[0] == 2) {
-          this.mensaje=`Paso 4 invitado`
+          this.mensaje = `Paso 4 invitado`
           this.valueDonut("75")
           this.validarInvitado(this.codigoQR[1])
         } else {
-          this.mensaje='codigoQr no valido'
+          this.mensaje = 'codigoQr no valido'
           this.loadDonutError()
           console.log(this.mensaje)
         }
       } else {
-        this.mensaje='la sede del codigoQR no corresponde al idSedeTorniquete'
+        this.mensaje = 'la sede del codigoQR no corresponde al idSedeTorniquete'
         this.loadDonutError()
         console.log(this.mensaje)
       }
     } else {
-      this.mensaje='sin conexion a internet'
+      this.mensaje = 'sin conexion a internet'
       this.loadDonutError()
       console.log(this.mensaje)
     }
-   
+
   }
 
   sedeCorrespondiente(sedeCogdigo) {
@@ -148,10 +148,10 @@ export class HomePage implements OnInit {
     this.miembrosService.findById(idUsuario).subscribe(
       success => {
         let auxMiembro = success.body['0']
-        if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])){
-          this.validarRegistroEntradaMiembro(auxMiembro,estadoQR)
+        if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])) {
+          this.validarRegistroEntradaMiembro(auxMiembro, estadoQR)
         } else {
-          this.mensaje='El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado'
+          this.mensaje = 'El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado'
           this.loadDonutError()
           console.log(this.mensaje)
         }
@@ -161,31 +161,31 @@ export class HomePage implements OnInit {
     )
   }
 
-  validarRegistroEntradaMiembro(auxMiembro,estadoQR) {
+  validarRegistroEntradaMiembro(auxMiembro, estadoQR) {
     this.entradaMiembrosService.findLastRegistryByUserId(auxMiembro['user']['id']).subscribe(
       success => {
-        if (success.body['0'] !== undefined){
+        if (success.body['0'] !== undefined) {
           let auxEntradaMiembros = success.body['0']
           // 1. Validar que el ultimo registro si sea del dia actual
           let auxDateUltimoRegistro = new Date(auxEntradaMiembros['registroFecha'])
           let auxCurrentDate = new Date(Date.now())
           if (auxDateUltimoRegistro.getDate() == auxCurrentDate.getDate() && auxDateUltimoRegistro.getMonth() == auxCurrentDate.getMonth()) {
             // 2.1 registros en el dia actual
-            if(estadoQR  == (auxEntradaMiembros['salida'] ? '0' : '1')){
+            if (estadoQR == (auxEntradaMiembros['salida'] ? '0' : '1')) {
               // Qr i/o coherente con el ultimo registro => Registrar i/o
-              this.registrarEntradaMiembro(estadoQR,auxMiembro['user'])
+              this.registrarEntradaMiembro(estadoQR, auxMiembro['user'])
             } else {
-              this.mensaje=`no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`
+              this.mensaje = `no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`
               console.log(this.mensaje)
               this.loadDonutError()
             }
           } else {
             // 2.2 primer registro del dia => Registrar Entrada
-            this.registrarEntradaMiembro(0,auxMiembro['user'])
+            this.registrarEntradaMiembro(0, auxMiembro['user'])
           }
         } else {
           // primer registro historico => Registrar Entrada
-          this.registrarEntradaMiembro(0,auxMiembro['user'])
+          this.registrarEntradaMiembro(0, auxMiembro['user'])
         }
       }, error => {
         console.error(error)
@@ -197,29 +197,29 @@ export class HomePage implements OnInit {
     return (nivel && activo)
   }
 
-  registrarEntradaMiembro(estadoQR, user){
-   const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
-   this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
-     success => {
-      this.valueDonut("100")
-      this.mensaje=`registro Exitoso`
-    }, error => {
-      this.mensaje='no se ha podido generar el registro de manera exitosa, intente otra vez'
-      console.log(this.mensaje)
-      this.loadDonutError()
-     }
-   )
+  registrarEntradaMiembro(estadoQR, user) {
+    const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
+    this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
+      success => {
+        this.valueDonut("100")
+        this.mensaje = `registro Exitoso`
+      }, error => {
+        this.mensaje = 'no se ha podido generar el registro de manera exitosa, intente otra vez'
+        console.log(this.mensaje)
+        this.loadDonutError()
+      }
+    )
   }
 
-  private registroEntradaMiembro( estadoQR, user ): EntradaMiembros {
-    let salida = (estadoQR == '1' ? true : false ) 
+  private registroEntradaMiembro(estadoQR, user): EntradaMiembros {
+    let salida = (estadoQR == '1' ? true : false)
     return {
-        ...new EntradaMiembros(),
-        registroFecha: new Date(Date.now()).toISOString(),
-        salida: salida,
-        tiempoMaximo: false,
-        user: user,
-        sede: this.sedeTorniquete,
+      ...new EntradaMiembros(),
+      registroFecha: new Date(Date.now()).toISOString(),
+      salida: salida,
+      tiempoMaximo: false,
+      user: user,
+      sede: this.sedeTorniquete,
     };
   }
 
@@ -228,52 +228,52 @@ export class HomePage implements OnInit {
   validarInvitado(idInvitacion) {
     // 1.Validar validez invitacion
     this.invitacionService.findById(idInvitacion).subscribe(
-        success => {
-          if (success.body['0'] !== undefined){
-            let auxInvitacion = success.body['0']
-            if (this.invitacionVigente(auxInvitacion['fechaFin'])){
-              // invitacion vigente
-              if (this.sedeCorrespondiente(auxInvitacion['sede']['id'])) {
-                this.miembrosService.findByUserId(auxInvitacion['invitado']['user']['id']).subscribe(
-                  success => {
-                    let auxMiembro = success.body['0']
-                    if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])){
-                      // miembro con acceso permitido
-                      this.validarEntradaInvitado(auxInvitacion)
-                    } else {
-                      this.mensaje='El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado'
-                      this.loadDonutError()
-                      console.log(this.mensaje)
-                    }
-                  }, error => {
-                    console.error(error)
+      success => {
+        if (success.body['0'] !== undefined) {
+          let auxInvitacion = success.body['0']
+          if (this.invitacionVigente(auxInvitacion['fechaFin'])) {
+            // invitacion vigente
+            if (this.sedeCorrespondiente(auxInvitacion['sede']['id'])) {
+              this.miembrosService.findByUserId(auxInvitacion['invitado']['user']['id']).subscribe(
+                success => {
+                  let auxMiembro = success.body['0']
+                  if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])) {
+                    // miembro con acceso permitido
+                    this.validarEntradaInvitado(auxInvitacion)
+                  } else {
+                    this.mensaje = 'El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado'
+                    this.loadDonutError()
+                    console.log(this.mensaje)
                   }
-                )
-              } else {
-                this.mensaje='la invitacion no corresponde al idSedeTorniquete'
-                this.loadDonutError()
-                console.log(this.mensaje)
-              }
+                }, error => {
+                  console.error(error)
+                }
+              )
             } else {
-              this.mensaje='la invitacion no es vigente, intenta con otro codigo Qr'
+              this.mensaje = 'la invitacion no corresponde al idSedeTorniquete'
               this.loadDonutError()
               console.log(this.mensaje)
             }
           } else {
-            this.mensaje='la invitacion no es valida, intenta con otro codigo Qr'
+            this.mensaje = 'la invitacion no es vigente, intenta con otro codigo Qr'
             this.loadDonutError()
             console.log(this.mensaje)
           }
-        }, error => {
-          console.error(error)
+        } else {
+          this.mensaje = 'la invitacion no es valida, intenta con otro codigo Qr'
+          this.loadDonutError()
+          console.log(this.mensaje)
         }
-      )
+      }, error => {
+        console.error(error)
+      }
+    )
   }
 
-  validarEntradaInvitado(auxInvitacion){
+  validarEntradaInvitado(auxInvitacion) {
     this.entradaInvitadosService.findLastRegistryByGuestId(auxInvitacion['invitado']['id']).subscribe(
       success => {
-        if (success.body['0'] !== undefined){
+        if (success.body['0'] !== undefined) {
           let auxEntradaInvitado = success.body['0']
           // 1. Validar que el ultimo registro si sea del dia actual
           let auxDateUltimoRegistro = new Date(auxEntradaInvitado['registroFecha'])
@@ -281,20 +281,20 @@ export class HomePage implements OnInit {
           if (auxDateUltimoRegistro.getDate() == auxCurrentDate.getDate() && auxDateUltimoRegistro.getMonth() == auxCurrentDate.getMonth()) {
             // 2.1 registros en el dia actual
             console.log('registros en el dia actual')
-            if(this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida'])){
+            if (this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida'])) {
               this.registrarEntradaInvitado(!auxEntradaInvitado['salida'], auxEntradaInvitado['invitado'])
             } else {
-              this.mensaje=`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`
+              this.mensaje = `no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`
               console.log(this.mensaje)
               this.loadDonutError()
             }
           } else {
             // 2.2 primer registro del dia => Registrar Entrada
             console.log('primer registro del dia => Registrar Entrada')
-            if(this.validarUltimoRegistroSalidaTorniquete(false)){
+            if (this.validarUltimoRegistroSalidaTorniquete(false)) {
               this.registrarEntradaInvitado(false, auxEntradaInvitado['invitado'])
             } else {
-              this.mensaje=`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'},  debido a que el no cuenta con un registro de ingreso`
+              this.mensaje = `no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'},  debido a que el no cuenta con un registro de ingreso`
               console.log(this.mensaje)
               this.loadDonutError()
             }
@@ -302,10 +302,10 @@ export class HomePage implements OnInit {
         } else {
           // primer registro historico => Registrar Entrada
           console.log('primer registro historico => Registrar Entrada')
-          if(this.validarUltimoRegistroSalidaTorniquete(false)){
+          if (this.validarUltimoRegistroSalidaTorniquete(false)) {
             this.registrarEntradaInvitado(false, auxInvitacion['invitado'])
           } else {
-            this.mensaje=`no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el no cuenta con un registro de ingreso`
+            this.mensaje = `no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el no cuenta con un registro de ingreso`
             console.log(this.mensaje)
             this.loadDonutError()
           }
@@ -317,8 +317,8 @@ export class HomePage implements OnInit {
     )
   }
 
-  invitacionVigente(fechaFinInvitacion){
-    let auxFechaFin = Number(new Date(fechaFinInvitacion))*1
+  invitacionVigente(fechaFinInvitacion) {
+    let auxFechaFin = Number(new Date(fechaFinInvitacion)) * 1
     let now = Number(new Date()) * 1
     if (now <= auxFechaFin) {
       return true
@@ -327,26 +327,26 @@ export class HomePage implements OnInit {
     }
   }
 
-  validarUltimoRegistroSalidaTorniquete(ultimoRegistroInvitado){
-    let salidaTorniquete = (this.identificadorTorniquete['1'] === '1' ? true : false )
+  validarUltimoRegistroSalidaTorniquete(ultimoRegistroInvitado) {
+    let salidaTorniquete = (this.identificadorTorniquete['1'] === '1' ? true : false)
     return salidaTorniquete === ultimoRegistroInvitado
   }
-  
 
-  registrarEntradaInvitado(salida, invitado){
+
+  registrarEntradaInvitado(salida, invitado) {
     const registroEntradaInvitado = this.registroEntradaInvitado(salida, invitado)
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje=`registro Exitoso`
+        this.mensaje = `registro Exitoso`
         this.successDonut()
-        }, error => {
-         console.log ( 'no se ha podido generar el registro de manera exitosa, intente otra vez')
+      }, error => {
+        console.log('no se ha podido generar el registro de manera exitosa, intente otra vez')
       }
     )
-   }
+  }
 
-   protected registroEntradaInvitado(salida, invitado): EntradaInvitados {
+  protected registroEntradaInvitado(salida, invitado): EntradaInvitados {
     return {
       ...new EntradaInvitados(),
       registroFecha: new Date(Date.now()).toISOString(),
@@ -358,15 +358,15 @@ export class HomePage implements OnInit {
   }
 
   /* Controladores de vista */
-  onKeypressEvent(event: any){
-    console.log("event.target.value",event.target.value);
+  onKeypressEvent(event: any) {
+    console.log("event.target.value", event.target.value);
   }
 
-  loadDonutError(){
-    this.mensajeProcedimiento="error"
+  loadDonutError() {
+    this.mensajeProcedimiento = "error"
     let rootElement = document.documentElement;
     rootElement.style.setProperty("--donut-value-medicion", '0');
-    setTimeout(function(){ 
+    setTimeout(function () {
       let donut = document.getElementById('donut');
       let qrimg = document.getElementById('qr-img');
       let error = document.getElementById('error');
@@ -378,56 +378,56 @@ export class HomePage implements OnInit {
 
   }
 
-  loadDonut(){
-      let donut = document.getElementById('donut');
-      let qrimg = document.getElementById('qr-img');
-      let msgerror = document.getElementById('error');
-      donut.classList.remove('hidden');
-      qrimg.classList.add('hidden');
-      msgerror.classList.add('hidden');
+  loadDonut() {
+    let donut = document.getElementById('donut');
+    let qrimg = document.getElementById('qr-img');
+    let msgerror = document.getElementById('error');
+    donut.classList.remove('hidden');
+    qrimg.classList.add('hidden');
+    msgerror.classList.add('hidden');
   }
 
 
 
 
 
-  valueDonut(val){
+  valueDonut(val) {
     let rootElement = document.documentElement;
-      setTimeout(function(){ 
+    setTimeout(function () {
       const donutVal = val;
-      console.log("valueDonut",donutVal)
-        rootElement.style.setProperty("--donut-value-medicion", donutVal);
-      }, 200);
+      console.log("valueDonut", donutVal)
+      rootElement.style.setProperty("--donut-value-medicion", donutVal);
+    }, 200);
   }
 
-  successDonut(){
-    this.mensajeProcedimiento="registro"
+  successDonut() {
+    this.mensajeProcedimiento = "registro"
     // console.log("Hola mundo")
     let donut = document.getElementById('porcentaje');
     let imgdonut = document.getElementById('img-donut');
     let msgdonut = document.getElementById('msg-donut');
     this.img = "assets/img/donut-step-5.png"
 
-    setTimeout(function(){ 
+    setTimeout(function () {
       imgdonut.classList.add('scale-out');
       donut.classList.add('scale-out');
     }, 1600);
 
 
-    setTimeout(function(){ 
+    setTimeout(function () {
       imgdonut.classList.add('scale-in')
       msgdonut.classList.add('scale-out');
     }, 2050);
 
-    setTimeout(function(){ 
+    setTimeout(function () {
       msgdonut.classList.add('hidden')
       donut.classList.add('hidden')
     }, 2200);
     this.reload()
   }
 
-  reload(){
-    setTimeout(function(){ 
+  reload() {
+    setTimeout(function () {
       location.reload();
     }, 3000);
   }
