@@ -9,6 +9,8 @@ import { InvitadosService } from 'src/app/services/invitados/invitados.service';
 import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
+import { Network } from '@capacitor/network';
+
 
 @Component({
   selector: 'app-home',
@@ -22,6 +24,7 @@ export class HomePage implements OnInit {
   sedeTorniquete : any = []
   mensaje:any = "Escanea tu QR en el lector"  
   img:any=""
+  mensajeProcedimiento:any=""
   constructor(
     public navController: NavController,
     public sedesService : SedesService,
@@ -29,15 +32,20 @@ export class HomePage implements OnInit {
     public invitadosService : InvitadosService,
     public entradaMiembrosService : EntradaMiembrosService,
     public entradaInvitadosService : EntradaInvitadosService,
-    public invitacionService : InvitacionService
-    
+    public invitacionService : InvitacionService,
   ) { }
 
   ngOnInit() {
-    
-    this.img = "assets/img/donut-step-1.png"
-    this.identificadorTorniquete = this.identificadorTorniquete.split(',')
-    this.consultarSede(this.identificadorTorniquete['0'])
+    if (this.conexionInternet()){
+      this.mensajeProcedimiento="escanear"
+      this.img = "assets/img/donut-step-1.png"
+      this.identificadorTorniquete = this.identificadorTorniquete.split(',')
+      this.consultarSede(this.identificadorTorniquete['0'])
+    } else {
+      this.mensaje='sin conexion a internet'
+      this.loadDonutError()
+      console.log(this.mensaje)
+    }
   }
 
   consultarSede(idSede){
@@ -54,51 +62,63 @@ export class HomePage implements OnInit {
     )
   }
 
+  async conexionInternet() {
+    let estadoIntenet = await Network.getStatus()
+    return estadoIntenet.connected
+  }
+
   /* Validacion Inicial */
   obtenerCodigoQR() {
-    this.codigoQR = this.codigoQR.split(',')
-    // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
-    if (this.sedeCorrespondiente(this.codigoQR[2])) {
-      this.mensaje=`Paso 1`
-      this.loadDonut()
-      this.valueDonut("25")
-      // 2. Validar el tipo de Qr y registrar sus datos
-      if (this.codigoQR[0] == 1) {
-        this.mensaje=`Paso 2`
-        this.valueDonut("35")
-        // 3. Validar vigencia Qr
-        if (this.codigoQrVigente(this.codigoQR[4])) {
-          this.mensaje=`Paso 3`
-          this.valueDonut("65")
-          // 4. codigoQr corresponde al torniquete 
-          if ( this.codigoCorrespondiente(this.codigoQR[3])) {
-            this.mensaje=`Paso 4 miembro`
-            this.valueDonut("75")
-            this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
+    if (this.conexionInternet()){
+      this.codigoQR = this.codigoQR.split(',')
+      // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
+      if (this.sedeCorrespondiente(this.codigoQR[2])) {
+        this.mensaje=`Paso 1`
+        this.loadDonut()
+        this.valueDonut("25")
+        // 2. Validar el tipo de Qr y registrar sus datos
+        if (this.codigoQR[0] == 1) {
+          this.mensaje=`Paso 2`
+          this.valueDonut("35")
+          // 3. Validar vigencia Qr
+          if (this.codigoQrVigente(this.codigoQR[4])) {
+            this.mensaje=`Paso 3`
+            this.valueDonut("65")
+            // 4. codigoQr corresponde al torniquete 
+            if ( this.codigoCorrespondiente(this.codigoQR[3])) {
+              this.mensaje=`Paso 4 miembro`
+              this.valueDonut("75")
+              this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
+            } else {
+              this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
+              this.loadDonutError()
+              console.log(this.mensaje)
+            }
           } else {
-            this.mensaje=`codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0)? 'entrada' : 'salida'} `
+            this.mensaje='codigoQr de miembro no vigente'
             this.loadDonutError()
             console.log(this.mensaje)
           }
+        } else if (this.codigoQR[0] == 2) {
+          this.mensaje=`Paso 4 invitado`
+          this.valueDonut("75")
+          this.validarInvitado(this.codigoQR[1])
         } else {
-          this.mensaje='codigoQr de miembro no vigente'
+          this.mensaje='codigoQr no valido'
           this.loadDonutError()
           console.log(this.mensaje)
         }
-      } else if (this.codigoQR[0] == 2) {
-        this.mensaje=`Paso 4 invitado`
-        this.valueDonut("75")
-        this.validarInvitado(this.codigoQR[1])
       } else {
-        this.mensaje='codigoQr no valido'
+        this.mensaje='la sede del codigoQR no corresponde al idSedeTorniquete'
         this.loadDonutError()
         console.log(this.mensaje)
       }
     } else {
-      this.mensaje='la sede del codigoQR no corresponde al idSedeTorniquete'
+      this.mensaje='sin conexion a internet'
       this.loadDonutError()
       console.log(this.mensaje)
     }
+   
   }
 
   sedeCorrespondiente(sedeCogdigo) {
@@ -343,6 +363,7 @@ export class HomePage implements OnInit {
   }
 
   loadDonutError(){
+    this.mensajeProcedimiento="error"
     let rootElement = document.documentElement;
     rootElement.style.setProperty("--donut-value-medicion", '0');
     setTimeout(function(){ 
@@ -380,7 +401,7 @@ export class HomePage implements OnInit {
   }
 
   successDonut(){
-
+    this.mensajeProcedimiento="registro"
     // console.log("Hola mundo")
     let donut = document.getElementById('porcentaje');
     let imgdonut = document.getElementById('img-donut');
