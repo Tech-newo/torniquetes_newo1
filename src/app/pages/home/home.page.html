@@ -17,8 +17,8 @@
  <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
 
  <div class="inputQR inputQR-2">
-    <ion-input color="transparent" (keypress)="onKeypressEvent($event)" autofocus="true" [(ngModel)]="codigoQR" clear-input="clearInput" enterkeyhint="search"  (keyup.enter)="obtenerCodigoQR()"></ion-input>
- </div>
+    <ion-input type="text" id="qrCodeInput" style="background-color: red;" color="transparent" (keypress)="onKeypressEvent($event)" [(ngModel)]="codigoQR" (keyup.enter)="obtenerCodigoQR()"></ion-input>
+  </div>
 
  <ion-label id="outputMessage">{{mensaje}}</ion-label>
 
