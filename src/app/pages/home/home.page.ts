@@ -10,6 +10,7 @@ import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
 import { Network } from '@capacitor/network';
+import { LoginPage } from '../login/login.page';
 
 
 @Component({
@@ -20,7 +21,7 @@ import { Network } from '@capacitor/network';
 export class HomePage implements OnInit {
   account: Account;
   codigoQR: any = ''
-  identificadorTorniquete: any = '1502,1'
+  identificadorTorniquete: any = LoginPage.sede
   sedeTorniquete: any = []
   mensaje: any = "Escanea tu QR en el lector"
   img: any = ""
@@ -152,7 +153,7 @@ export class HomePage implements OnInit {
         if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])) {
           this.validarRegistroEntradaMiembro(auxMiembro, estadoQR)
         } else {
-          this.mensaje = 'El nivel del miembro no cuenta conacceso a sedes o su usario esta desactivado'
+          this.mensaje = 'El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado'
           this.loadDonutError()
           console.log(this.mensaje)
         }

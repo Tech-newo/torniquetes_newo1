@@ -8,7 +8,9 @@ from time import sleep
 
 # TODO 1: set global variables
 session_started = False
-is_internet_on = True
+IS_INTERNET_ON = True
+TIME_TO_WAIT = 4
+TIME_OFF_LINE = 60
 
 # TODO 2: start de web driver
 driver = Chrome('/Users/be4tech/accesonewo/procesoAutomatico/chromedriver')
@@ -46,31 +48,26 @@ def process_data():
     message = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="outputMessage"]')))
     print(message.text)
     if message.text == 'success':
-        print('Registro Exitoso')
-        sleep(4)
-
+        print('success')
+        sleep(TIME_TO_WAIT)
     elif message.text == 'lost connection':
         print('sin_internet')
-        sleep(4)
+        sleep(TIME_OFF_LINE)
 
     elif message.text == 'scanning':
-        sleep(1)
+        sleep(TIME_TO_WAIT)
         input_qr_code = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="qrCodeInput"]/input')))
         input_qr_code.click()
         input_qr_code.clear()
         input_qr_code.send_keys("2,121061,1502")
         input_qr_code.send_keys(Keys.ENTER)
-        sleep(4)
-
+        sleep(TIME_TO_WAIT)
     elif message.text == 'error':
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="outputMessage"]')))
-        sleep(4)
-        
-    else:
-        is_internet_on = False
+        sleep(TIME_TO_WAIT)
 
 
-while is_internet_on:
+while IS_INTERNET_ON:
     if is_login():
         process_data()
     else:
