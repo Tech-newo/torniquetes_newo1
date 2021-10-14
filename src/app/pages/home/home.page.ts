@@ -215,7 +215,7 @@ export class HomePage  {
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `${estadoQR ? 'Hola' : 'Chao'} ,${user.firstname} `
+        this.mensaje = `${estadoQR ? 'Hola' : 'Hasta pronto'} ${user.firstname} !`
         this.mensajeProcedimiento = "success"
       }, error => {
         this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
@@ -352,7 +352,7 @@ export class HomePage  {
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `${salida ? 'Hola' : 'Hasta pronto'} ${invitado.nombre}! `
+        this.mensaje = `${!salida ? 'Hola' : 'Hasta pronto'} ${invitado.nombre}! `
         this.mensajeProcedimiento = "success"
         this.successDonut()
       }, error => {
@@ -463,7 +463,7 @@ export class HomePage  {
       console.log("enter")
       setTimeout(() => {
         document.getElementById('code').focus();
-      }, 150);
+      }, 200);
     }
   }
 }
