@@ -69,6 +69,7 @@ export class HomePage  {
           this.sedeTorniquete = success.body['0']
         } else {
           console.log('Error_int : no se ha encontrado una sede para realizar el registro ')
+          this.mensajeProcedimiento = "reset"
         }
       }, error => {
         console.error(error)
@@ -85,43 +86,43 @@ export class HomePage  {
       this.mensajeProcedimiento = "processing"
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
       if (this.sedeCorrespondiente(this.codigoQR[2])) {
-        this.mensaje = `Paso 1`
+        this.mensaje = `Validando la Sede NEWO`
         this.loadDonut()
         this.valueDonut("15")
         // 2. Validar el tipo de Qr y registrar sus datos
         if (this.codigoQR[0] == 1) {
-          this.mensaje = `Paso 2`
+          this.mensaje = `Validando tu código QR`
           this.valueDonut("25")
           // 3. Validar vigencia Qr
           if (this.codigoQrVigente(this.codigoQR[4])) {
-            this.mensaje = `Paso 3`
+            this.mensaje = `Validando tu código QR`
             this.valueDonut("35")
             // 4. codigoQr corresponde al torniquete 
             if (this.codigoCorrespondiente(this.codigoQR[3])) {
-              this.mensaje = `Paso 4 miembro`
+              this.mensaje = 'Validando tu identidad'
               this.valueDonut("50")
               this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
             } else {
-              this.mensaje = `codigoQr de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} `
+              this.mensaje = `Código QR de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} `
               this.loadDonutError(true)
               console.log(this.mensaje)
             }
           } else {
-            this.mensaje = 'codigoQr de miembro no vigente'
+            this.mensaje = 'Código QR expirado'
             this.loadDonutError(true)
             console.log(this.mensaje)
           }
         } else if (this.codigoQR[0] == 2) {
-          this.mensaje = `Paso 4 invitado`
+          this.mensaje = 'Validando tu identidad'
           this.valueDonut("50")
           this.validarInvitado(this.codigoQR[1])
         } else {
-          this.mensaje = 'codigoQr no valido'
+          this.mensaje = 'Código QR no es válido'
           this.loadDonutError(true)
           console.log(this.mensaje)
         }
       } else {
-        this.mensaje = '1 la sede del codigoQR no corresponde al idSedeTorniquete'
+        this.mensaje = 'Código QR no es válido'
         this.loadDonutError(true)
         console.log(this.mensaje)
       }
@@ -163,7 +164,7 @@ export class HomePage  {
         if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])) {
           this.validarRegistroEntradaMiembro(auxMiembro, estadoQR)
         } else {
-          this.mensaje = 'El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado'
+          this.mensaje = ' Membresia sin acceso a sedes NEWO '
           this.loadDonutError(true)
           console.log(this.mensaje)
         }
@@ -187,7 +188,7 @@ export class HomePage  {
               // Qr i/o coherente con el ultimo registro => Registrar i/o
               this.registrarEntradaMiembro(estadoQR, auxMiembro['user'])
             } else {
-              this.mensaje = `no es podible registrar la ${estadoQR ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaMiembros['salida'] ? 'salida' : 'entrada'}`
+              this.mensaje = `Código QR no es válido, no corresponde a registro de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} ` 
               console.log(this.mensaje)
               this.loadDonutError(true)
             }
@@ -214,10 +215,10 @@ export class HomePage  {
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `registro Exitoso`
+        this.mensaje = `${estadoQR ? 'Hola' : 'Chao'} ,${user.firstname} `
         this.mensajeProcedimiento = "success"
       }, error => {
-        this.mensaje = 'no se ha podido generar el registro de manera exitosa, intente otra vez'
+        this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
         console.log(this.mensaje)
         this.loadDonutError(true)
       }
@@ -254,7 +255,7 @@ export class HomePage  {
                     // miembro con acceso permitido
                     this.validarEntradaInvitado(auxInvitacion)
                   } else {
-                    this.mensaje = 'El nivel del miembro no cuenta con acceso a sedes o su usario esta desactivado'
+                    this.mensaje = ' EL anfitrión no cuenta con acceso a sedes NEWO '
                     this.loadDonutError(true)
                     console.log(this.mensaje)
                   }
@@ -263,17 +264,17 @@ export class HomePage  {
                 }
               )
             } else {
-              this.mensaje = 'la invitacion no corresponde al idSedeTorniquete'
+              this.mensaje = 'Código QR no es válido, la invitación se generó para otra sede NEWO'
               this.loadDonutError(true)
               console.log(this.mensaje)
             }
           } else {
-            this.mensaje = 'la invitacion no es vigente, intenta con otro codigo Qr'
+            this.mensaje = 'Código QR no es válido, la invitacion no es vigente'
             this.loadDonutError(true)
             console.log(this.mensaje)
           }
         } else {
-          this.mensaje = 'la invitacion no es valida, intenta con otro codigo Qr'
+          this.mensaje = 'Código QR no es válido'
           this.loadDonutError(true)
           console.log(this.mensaje)
         }
@@ -297,7 +298,7 @@ export class HomePage  {
             if (this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida'])) {
               this.registrarEntradaInvitado(!auxEntradaInvitado['salida'], auxEntradaInvitado['invitado'])
             } else {
-              this.mensaje = `no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el ultimo registro es una ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`
+              this.mensaje = `Código QR no es válido, no corresponde a registro de ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`
               console.log(this.mensaje)
               this.loadDonutError(true)
             }
@@ -307,7 +308,7 @@ export class HomePage  {
             if (this.validarUltimoRegistroSalidaTorniquete(false)) {
               this.registrarEntradaInvitado(false, auxEntradaInvitado['invitado'])
             } else {
-              this.mensaje = `no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'},  debido a que el no cuenta con un registro de ingreso`
+              this.mensaje = `Código QR no es válido, no cuenta con un registro de ingreso`
               console.log(this.mensaje)
               this.loadDonutError(true)
             }
@@ -318,7 +319,7 @@ export class HomePage  {
           if (this.validarUltimoRegistroSalidaTorniquete(false)) {
             this.registrarEntradaInvitado(false, auxInvitacion['invitado'])
           } else {
-            this.mensaje = `no es podible registrar la ${this.identificadorTorniquete['1'] == '0' ? 'entrada' : 'salida'}, debido a que el no cuenta con un registro de ingreso`
+            this.mensaje = `Código QR no es válido, no cuenta con un registro de ingreso`
             console.log(this.mensaje)
             this.loadDonutError(true)
           }
@@ -351,11 +352,11 @@ export class HomePage  {
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `registro Exitoso`
+        this.mensaje = `${salida ? 'Hola' : 'Hasta pronto'} ${invitado.nombre}! `
         this.mensajeProcedimiento = "success"
         this.successDonut()
       }, error => {
-        console.log('no se ha podido generar el registro de manera exitosa, intente otra vez')
+        this.mensaje = `${invitado.nombre} no fue posible realizar el registro, intenta nuevamente `
       }
     )
   }
