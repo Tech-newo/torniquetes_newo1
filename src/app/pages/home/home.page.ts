@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { EntradaInvitados } from 'src/app/services/entradaInvitados/entrada-invitados.model';
 import { EntradaInvitadosService } from 'src/app/services/entradaInvitados/entrada-invitados.service';
@@ -17,7 +17,7 @@ import { LoginPage } from '../login/login.page';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss']
 })
-export class HomePage implements OnInit {
+export class HomePage  {
   account: Account;
   codigoQR: any = ''
   identificadorTorniquete: any = LoginPage.sede
@@ -35,7 +35,9 @@ export class HomePage implements OnInit {
     public invitacionService: InvitacionService,
   ) { }
 
-  ngOnInit() {
+  ionViewDidEnter() {
+    document.getElementById('qrCodeInput').setAttribute('autofocus','true')
+    this.mensajeProcedimiento = "starting"
     if (this.identificadorTorniquete == undefined) {
       this.identificadorTorniquete = localStorage.getItem('sede')
     } else {
@@ -43,10 +45,14 @@ export class HomePage implements OnInit {
     }
 
     if (navigator.onLine) {
-      this.mensajeProcedimiento = "scanning"
       this.img = "assets/img/donut-step-1.png"
       this.identificadorTorniquete = this.identificadorTorniquete.split(',')
       this.consultarSede(this.identificadorTorniquete['0'])
+      
+      setTimeout(() => {
+        this.mensajeProcedimiento = "processing"
+      }, 1500);
+      
     } else {
       this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexion a internet'
@@ -76,6 +82,7 @@ export class HomePage implements OnInit {
     // console.log("navigator.onLine",navigator.onLine)
     if (navigator.onLine) {
       this.codigoQR = this.codigoQR.split(',')
+      this.mensajeProcedimiento = "processing"
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
       if (this.sedeCorrespondiente(this.codigoQR[2])) {
         this.mensaje = `Paso 1`
@@ -114,7 +121,7 @@ export class HomePage implements OnInit {
           console.log(this.mensaje)
         }
       } else {
-        this.mensaje = 'la sede del codigoQR no corresponde al idSedeTorniquete'
+        this.mensaje = '1 la sede del codigoQR no corresponde al idSedeTorniquete'
         this.loadDonutError(true)
         console.log(this.mensaje)
       }
@@ -446,8 +453,16 @@ export class HomePage implements OnInit {
           else if(!navigator.onLine){
             i++
           }
-        }, 10000);
+        }, 6000);
     }
+  }
 
+  keypress(event){
+    if(event.key=="Enter"){
+      console.log("enter")
+      setTimeout(() => {
+        document.getElementById('code').focus();
+      }, 150);
+    }
   }
 }

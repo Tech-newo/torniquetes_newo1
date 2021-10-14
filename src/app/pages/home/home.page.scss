@@ -11,7 +11,13 @@
     // overflow: hidden;
     // border: solid red;
 }
-
+.hidden{
+    display: hidden;
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    left: -100px;
+}
 .inputQR-2{
     position: absolute; 
     top: 220px;
