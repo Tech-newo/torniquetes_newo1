@@ -55,7 +55,7 @@ export class HomePage  {
       
     } else {
       this.mensajeProcedimiento = "lost connection"
-      this.mensaje = 'sin conexion a internet'
+      this.mensaje = 'sin conexión a internet'
       this.loadDonutError(false)
       // console.log(this.mensaje)
     }
@@ -103,12 +103,12 @@ export class HomePage  {
               this.valueDonut("50")
               this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
             } else {
-              this.mensaje = `Código QR de ${(this.codigoQR[3] == 0) ? 'entrada' : 'salida'} no corresponde con el torniquete de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} `
+              this.mensaje = `Código QR es inválido, genera un código QR nuevo y vuelve a intentarlo`
               this.loadDonutError(true)
               console.log(this.mensaje)
             }
           } else {
-            this.mensaje = 'Código QR expirado'
+            this.mensaje = 'Código QR ha expirado, genera uno nuevo'
             this.loadDonutError(true)
             console.log(this.mensaje)
           }
@@ -164,7 +164,7 @@ export class HomePage  {
         if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])) {
           this.validarRegistroEntradaMiembro(auxMiembro, estadoQR)
         } else {
-          this.mensaje = ' Membresia sin acceso a sedes NEWO '
+          this.mensaje = ' Membresía sin acceso a sedes NEWO '
           this.loadDonutError(true)
           console.log(this.mensaje)
         }
@@ -188,7 +188,7 @@ export class HomePage  {
               // Qr i/o coherente con el ultimo registro => Registrar i/o
               this.registrarEntradaMiembro(estadoQR, auxMiembro['user'])
             } else {
-              this.mensaje = `Código QR no es válido, no corresponde a registro de ${(this.identificadorTorniquete['1'] == 0) ? 'entrada' : 'salida'} ` 
+              this.mensaje = `Código QR es inválido, genera un código QR nuevo y vuelve a intentarlo ` 
               console.log(this.mensaje)
               this.loadDonutError(true)
             }
@@ -215,7 +215,7 @@ export class HomePage  {
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `${estadoQR ? 'Hola' : 'Hasta pronto'} ${user.firstname} !`
+        this.mensaje = `${estadoQR ? 'Hola' : 'Esperamos verte pronto'} ${user.firstname} !`
         this.mensajeProcedimiento = "success"
       }, error => {
         this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
@@ -255,7 +255,7 @@ export class HomePage  {
                     // miembro con acceso permitido
                     this.validarEntradaInvitado(auxInvitacion)
                   } else {
-                    this.mensaje = ' EL anfitrión no cuenta con acceso a sedes NEWO '
+                    this.mensaje = ' La persona que te ha invitado no cuenta con acceso a nuestras sedes NEWO'
                     this.loadDonutError(true)
                     console.log(this.mensaje)
                   }
@@ -269,7 +269,7 @@ export class HomePage  {
               console.log(this.mensaje)
             }
           } else {
-            this.mensaje = 'Código QR no es válido, la invitacion no es vigente'
+            this.mensaje = 'Código QR no es válido, la invitación no es vigente'
             this.loadDonutError(true)
             console.log(this.mensaje)
           }
@@ -308,18 +308,17 @@ export class HomePage  {
             if (this.validarUltimoRegistroSalidaTorniquete(false)) {
               this.registrarEntradaInvitado(false, auxEntradaInvitado['invitado'])
             } else {
-              this.mensaje = `Código QR no es válido, no cuenta con un registro de ingreso`
+              this.mensaje = `Al parecer no cuentas con un registro de ingreso, comunícate con uno de nuestros host.`
               console.log(this.mensaje)
               this.loadDonutError(true)
             }
           }
         } else {
           // primer registro historico => Registrar Entrada
-          console.log('primer registro historico => Registrar Entrada')
           if (this.validarUltimoRegistroSalidaTorniquete(false)) {
             this.registrarEntradaInvitado(false, auxInvitacion['invitado'])
           } else {
-            this.mensaje = `Código QR no es válido, no cuenta con un registro de ingreso`
+            this.mensaje = `Al parecer no cuentas con un registro de ingreso, comunícate con uno de nuestros host.`
             console.log(this.mensaje)
             this.loadDonutError(true)
           }
@@ -352,7 +351,7 @@ export class HomePage  {
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `${!salida ? 'Hola' : 'Hasta pronto'} ${invitado.nombre}! `
+        this.mensaje = `${!salida ? 'Hola' : 'Esperamos verte pronto'} ${invitado.nombre}! `
         this.mensajeProcedimiento = "success"
         this.successDonut()
       }, error => {
