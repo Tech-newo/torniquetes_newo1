@@ -12,12 +12,21 @@ TIME_TO_WAIT = 1
 TIME_TO_LOGIN = 0.4
 enable_access = False
 
-# TODO 2: start de web driver
+'''
+# TODO 2: set logic output
+pin = 7
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(pin, GPIO.OUT)
+GPIO.output(pin, GPIO.HIGH)
+'''
+
+# TODO 3: start de web driver
 driver = Chrome('/Users/be4tech/accesonewo/procesoAutomatico/chromedriver')
 driver.get('http://localhost:8100/')
 
 
-# TODO 3: validate the login status
+# TODO 4: validate the login status
 def is_login():
     if driver.current_url == 'http://localhost:8100/':
         return False
@@ -25,7 +34,7 @@ def is_login():
         return True
 
 
-# TODO 4: login admin user
+# TODO 5: login admin user
 def login_administrator():
     try:
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[contains(@aria-labelledby,'ion-input-0-lbl')]")))
@@ -53,7 +62,7 @@ def login_administrator():
         print('login_administrator()')
 
 
-# TODO 5: Processing all events into qr logic
+# TODO 6: Processing all events into qr logic
 def process_data():
     try:
         message = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="outputMessage"]')))
@@ -71,6 +80,11 @@ def process_data():
             input_qr_code.clear()
         elif message.text == 'success':
             enable_access = True
+            '''
+            GPIO.output(pin, GPIO.LOW)
+            sleep(3)
+            GPIO.output(pin, GPIO.HIGH)
+            '''
         else:
             enable_access = False
     except:
@@ -80,6 +94,7 @@ def process_data():
         print('process_data():', enable_access)
 
 
+# TODO 7: Infinity loop
 is_internet_on = True
 while is_internet_on:
     sleep(TIME_TO_WAIT)

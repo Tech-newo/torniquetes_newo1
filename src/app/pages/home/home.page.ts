@@ -36,7 +36,9 @@ export class HomePage  {
   ) { }
 
   ionViewDidEnter() {
-    document.getElementById('qrCodeInput').setAttribute('autofocus','true')
+    setTimeout(() => {
+      document.getElementById('qrCodeInput').setAttribute('autofocus','true')
+    },500);
     this.mensajeProcedimiento = "starting"
     if (this.identificadorTorniquete == undefined) {
       this.identificadorTorniquete = localStorage.getItem('sede')
@@ -51,7 +53,7 @@ export class HomePage  {
       
       setTimeout(() => {
         this.mensajeProcedimiento = "processing"
-      }, 1500);
+      }, 3000);
       
     } else {
       this.mensajeProcedimiento = "lost connection"
@@ -215,8 +217,10 @@ export class HomePage  {
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `${estadoQR ? 'Hola' : 'Esperamos verte pronto'} ${user.firstname} !`
+        this.mensaje = `${estadoQR ? 'Hola' : 'Esperamos verte pronto'} ${user.firstName} !`
         this.mensajeProcedimiento = "success"
+        setTimeout(() => {}, 1000);
+        this.successDonut()
       }, error => {
         this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
         console.log(this.mensaje)
@@ -353,6 +357,7 @@ export class HomePage  {
         this.valueDonut("100")
         this.mensaje = `${!salida ? 'Hola' : 'Esperamos verte pronto'} ${invitado.nombre}! `
         this.mensajeProcedimiento = "success"
+        setTimeout(() => {}, 1000);
         this.successDonut()
       }, error => {
         this.mensaje = `${invitado.nombre} no fue posible realizar el registro, intenta nuevamente `
@@ -459,10 +464,12 @@ export class HomePage  {
 
   keypress(event){
     if(event.key=="Enter"){
-      console.log("enter")
       setTimeout(() => {
         document.getElementById('code').focus();
-      }, 200);
+      }, 500);
+      setTimeout(() => {
+        this.obtenerCodigoQR()
+      }, 1000);
     }
   }
 }
