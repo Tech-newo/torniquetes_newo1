@@ -84,6 +84,22 @@ export class HomePage  {
   obtenerCodigoQR() {
     // console.log("navigator.onLine",navigator.onLine)
     if (navigator.onLine) {
+
+      let i = 0;
+      let t = 0;
+        setInterval(()=>{
+          if(i>=60 && navigator.onLine==true){
+            // console.log("time completed and internet on",navigator.onLine)
+          }
+          else if(i>=60 && navigator.onLine==false){
+            // console.log("time completed and internet off",navigator.onLine)
+            this.mensajeProcedimiento = "reset"
+          }else{
+            // console.log("time, internet", t, navigator.onLine)
+            t++
+          }
+        }, 1000);
+        
       this.codigoQR = this.codigoQR.split(',')
       this.mensajeProcedimiento = "processing"
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
@@ -119,11 +135,13 @@ export class HomePage  {
           this.valueDonut("50")
           this.validarInvitado(this.codigoQR[1])
         } else {
+          
           this.mensaje = 'Código QR no es válido'
           this.loadDonutError(true)
           console.log(this.mensaje)
         }
       } else {
+        
         this.mensaje = 'Código QR no es válido'
         this.loadDonutError(true)
         console.log(this.mensaje)
@@ -408,7 +426,7 @@ export class HomePage  {
     let rootElement = document.documentElement;
     setTimeout(function () {
       const donutVal = val;
-      console.log("valueDonut", donutVal)
+      // console.log("valueDonut", donutVal)
       rootElement.style.setProperty("--donut-value-medicion", donutVal);
     }, 200);
   }
