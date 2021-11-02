@@ -1,22 +1,9 @@
-<!-- <ion-header>
-  <ion-toolbar>
-    <ion-title>
-      {{ 'WELCOME_TITLE' | translate }}, {{account?.firstName}}
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="logout()" id="logout">
-        {{ 'LOGOUT_TITLE' | translate }}
-        <ion-icon slot="end" name="log-out"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header> -->
 
 <div class="container ion-padding"> 
   
  <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
 
- <div class="inputQR inputQR-2">
+ <div class=" inputQR-2">
     <ion-input type="text" style="color: black;" autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" ></ion-input>
   </div>
   <input type="text" id="code" class="hidden">

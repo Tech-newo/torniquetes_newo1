@@ -6,12 +6,6 @@
     z-index: -5;
 }
 
-.inputQR{
-    // width: 0px;
-    // height: 0px;
-    // overflow: hidden;
-    // border: solid red;
-}
 .hidden{
     display: hidden;
     width: 0px;
@@ -21,12 +15,12 @@
 }
 .inputQR-2{
     position: absolute; 
-    top: 220px;
+    top: -100px;
     bottom: 0;
     left: 0;
     right: 0;
     margin: auto;
     width: 250px;
     height: 20px;
-    // z-index: -1;
+    z-index: -1;
 }
