@@ -90,10 +90,11 @@ export class HomePage  {
       let i = 0;
       let t = 0;
         setInterval(()=>{
-          if(i>=60 && navigator.onLine==true){
+          if(i>=40 && navigator.onLine==true){
+            this.mensajeProcedimiento = "reset"
             // console.log("time completed and internet on",navigator.onLine)
           }
-          else if(i>=60 && navigator.onLine==false){
+          else if(i>=40 && navigator.onLine==false){
             // console.log("time completed and internet off",navigator.onLine)
             this.mensajeProcedimiento = "reset"
           }else{
@@ -472,13 +473,13 @@ export class HomePage  {
           if(navigator.onLine){
             location.reload()
           } 
-          else if(i==10){
+          else if(i==4){
             this.mensajeProcedimiento = "reset"
           }
           else if(!navigator.onLine){
             i++
           }
-        }, 6000);
+        }, 10000);
     }
   }
 
