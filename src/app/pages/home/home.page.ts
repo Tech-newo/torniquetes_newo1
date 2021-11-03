@@ -37,7 +37,10 @@ export class HomePage  {
 
   ionViewDidEnter() {
 
-    document.getElementById('qrCodeInput').setAttribute('autofocus','true')
+    setTimeout(() => {
+      let input = document.getElementById('qrCodeInput');
+      input.focus()
+    }, 500);
     this.mensajeProcedimiento = "starting"
     if (this.identificadorTorniquete == undefined) {
       this.identificadorTorniquete = localStorage.getItem('sede')

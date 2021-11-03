@@ -22,8 +22,8 @@
     margin: auto;
     width: 250px;
     height: 50px;
-   // z-index: -1;
-//    border: solid red;
+    // z-index: -1;
+    // border: solid red;
 }
 .container-donut{
     height: 100vh;
@@ -31,5 +31,9 @@
     align-items: center;
 }
 #qrCodeInput{
-    color: #004343;
+    color: white;
+    background-color: #434343;
+    border: solid transparent;
+    outline: none;
+    opacity: 0;
 }
