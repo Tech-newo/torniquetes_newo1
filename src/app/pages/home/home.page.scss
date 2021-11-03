@@ -2,7 +2,7 @@
     background: hsla(265, 53%, 29%, 1);
     background: radial-gradient(circle, hsla(265, 53%, 29%, 1) 0%, hsla(0, 0%, 8%, 1) 80%);
     width: 100vw;
-    min-height: 100vh;
+    max-height: 100vh;
     z-index: -5;
 }
 
@@ -15,12 +15,21 @@
 }
 .inputQR-2{
     position: absolute; 
-    top: -100px;
+    top:45vh;
     bottom: 0;
     left: 0;
     right: 0;
     margin: auto;
     width: 250px;
-    height: 20px;
-    z-index: -1;
+    height: 50px;
+   // z-index: -1;
+//    border: solid red;
+}
+.container-donut{
+    height: 100vh;
+    display: flex;
+    align-items: center;
+}
+#qrCodeInput{
+    color: #004343;
 }

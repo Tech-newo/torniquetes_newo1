@@ -1,11 +1,13 @@
 
-<div class="container ion-padding"> 
+<div class="container"> 
   
- <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
+ <div class="container-donut">
+  <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
 
- <div class=" inputQR-2">
-    <ion-input type="text" style="color: black;" autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" ></ion-input>
-  </div>
-  <input type="text" id="code" class="hidden">
-  <ion-label style="color: black;" id="outputMessage">{{mensajeProcedimiento}}</ion-label>
+  <div class=" inputQR-2">
+     <ion-input type="text"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" ></ion-input>
+   </div>
+   <input type="text" id="code" class="hidden">
+ </div>
+  <!-- <ion-label style="color: black;" id="outputMessage">{{mensajeProcedimiento}}</ion-label> -->
 </div>
