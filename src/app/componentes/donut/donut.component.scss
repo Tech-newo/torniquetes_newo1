@@ -106,20 +106,21 @@ h1{
 }
 .img h1{
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 15pt;
+    font-size: 20pt;
     color: white;
     font-weight: 100;
     position: absolute;
-    left: -100px;
+    left: -135px;
     bottom: -100px;
     background-color: #434343;
-    width: 300px;
+    width: 360px;
     height: 70px;
     z-index: 100;
     border-radius: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
+    animation: scaleMesagge infinite 2s;
 }
 
 .img h2{
@@ -236,8 +237,23 @@ h1{
     0%{
         transform: scale(.95);
     }
-    100%{
+    50%{
         transform: scale(1);
+    }
+    100%{
+        transform: scale(.95);
+    }
+}
+
+@keyframes scaleMesagge {
+    0%{
+        transform: scale(.98);
+    }
+    50%{
+        transform: scale(1);
+    }
+    100%{
+        transform: scale(.98);
     }
 }
 

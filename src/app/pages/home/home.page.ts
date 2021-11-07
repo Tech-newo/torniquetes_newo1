@@ -36,11 +36,8 @@ export class HomePage  {
   ) { }
 
   ionViewDidEnter() {
-
-    setTimeout(() => {
-      let input = document.getElementById('qrCodeInput');
-      input.focus()
-    }, 500);
+    clearInterval(LoginPage.intervalLog);
+    document.getElementById('qrCodeInput').focus()
     this.mensajeProcedimiento = "starting"
     if (this.identificadorTorniquete == undefined) {
       this.identificadorTorniquete = localStorage.getItem('sede')
@@ -87,21 +84,7 @@ export class HomePage  {
     // console.log("navigator.onLine",navigator.onLine)
     if (navigator.onLine) {
 
-      let i = 0;
-      let t = 0;
-        setInterval(()=>{
-          if(i>=40 && navigator.onLine==true){
-            this.mensajeProcedimiento = "reset"
-            // console.log("time completed and internet on",navigator.onLine)
-          }
-          else if(i>=40 && navigator.onLine==false){
-            // console.log("time completed and internet off",navigator.onLine)
-            this.mensajeProcedimiento = "reset"
-          }else{
-            // console.log("time, internet", t, navigator.onLine)
-            t++
-          }
-        }, 1000);
+      this.reconeccion();
         
       this.codigoQR = this.codigoQR.split(',')
       this.mensajeProcedimiento = "processing"
@@ -153,6 +136,7 @@ export class HomePage  {
       this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexion a internet'
       this.loadDonutError(false)
+      this.reconeccion()
     }
 
   }
@@ -238,7 +222,7 @@ export class HomePage  {
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
         this.valueDonut("100")
-        this.mensaje = `${estadoQR ? 'Hola' : 'Esperamos verte pronto'} ${user.firstName} !`
+        this.mensaje = `${estadoQR == '0' ? 'Hola' : 'Esperamos verte pronto'} ${user.firstName} !`
         this.mensajeProcedimiento = "success"
         setTimeout(() => {}, 1000);
         this.successDonut()
@@ -473,14 +457,41 @@ export class HomePage  {
           if(navigator.onLine){
             location.reload()
           } 
-          else if(i==4){
+          else if(i==10){
             this.mensajeProcedimiento = "reset"
           }
           else if(!navigator.onLine){
             i++
           }
-        }, 10000);
+        }, 6000);
     }
+  }
+
+  reconeccion(){
+    let i = 0;
+      setInterval(()=>{
+        console.log(i)
+        if(i==10){
+          this.mensajeProcedimiento = `not_internet`
+        }
+        if(i>=10){
+          this.mensajeProcedimiento = `not_internet`
+          this.mensaje = `Conectando a internet `+i+` segundos` 
+        }
+        if(i==20 && navigator.onLine){
+          this.mensajeProcedimiento = `reconnect_internet`
+        }
+        if(i>=20 && navigator.onLine){
+          this.mensaje = `Reconectando por favor espere` 
+          setTimeout(() => {
+            location.reload()
+          }, 3000);
+        }
+        if(i>=20 && !navigator.onLine){
+          this.mensaje = `Conectando a internet `+i+` segundos`
+        }
+        i++
+      }, 1000);
   }
 
   keypress(event){

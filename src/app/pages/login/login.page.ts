@@ -20,6 +20,8 @@ export class LoginPage implements OnInit {
 
   // Our translated text strings
   private loginErrorString: string;
+  mensajeProcedimiento: string;
+  public static intervalLog: any;
 
   constructor(
     public translateService: TranslateService,
@@ -29,11 +31,25 @@ export class LoginPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.mensajeProcedimiento = "login"
     this.translateService.get('LOGIN_ERROR').subscribe(value => {
       this.loginErrorString = value;
     });
   }
+  
+  ionViewDidEnter(){
+    LoginPage.intervalLog = setInterval(()=>{
+      console.log("login")
+      document.getElementsByName('username')[0]['value'] = "admin";
+      document.getElementsByName('password')[0]['value'] = "Gpsglobal2014";
+      // document.getElementsByName('auxSede')[0]['value'] = "1502,0";
+      setTimeout(() => {
+        this.doLogin()
+      }, 950);
+    }, 2000);
+  }
 
+  
   async doLogin() {
     const toast = await this.toastController.create({
       message: this.loginErrorString,
@@ -44,7 +60,10 @@ export class LoginPage implements OnInit {
     if (LoginPage.sede.length > 0) {
       this.loginService.login(this.account).then(
         () => {
-          this.navController.navigateRoot('/tabs');
+          this.mensajeProcedimiento = "login_true"
+          setTimeout(() => {
+            this.navController.navigateRoot('/tabs');
+          }, 1000);
         },
         err => {
           // Unable to log in

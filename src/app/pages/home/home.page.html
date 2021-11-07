@@ -5,13 +5,11 @@
   <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
 
   <div class=" inputQR-2">
-     <!-- <ion-input type="text"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" ></ion-input> -->
-     <input type="text"   id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)">
+    <input type="text"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" > 
+    <!-- <ion-input type="text"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" ></ion-input> -->
+  <ion-label style="color: white" id="outputMessage">{{mensajeProcedimiento}}</ion-label>
+
    </div>
    <input type="text" id="code" class="hidden">
-
-   
  </div>
- <ion-label style="color: white; border:solid red; position: absolute; top: 0; bottom: 0; margin: auto;" id="outputMessage">{{mensajeProcedimiento}}</ion-label>
-
 </div>
