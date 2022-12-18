@@ -23,7 +23,6 @@ export class HomePage  {
   sedeTorniquete: any = []
   mensaje: any = "Escanea tu QR en el lector"
   img: any = ""
-  mensajeProcedimiento: any = ""
   lastId:any = undefined
   newId:any = undefined
   constructor(
@@ -37,23 +36,24 @@ export class HomePage  {
   ) { }
 
   ionViewDidEnter() {
-    clearInterval(LoginPage.intervalLog);
-    document.getElementById('qrCodeInput').focus()
-    if (this.identificadorTorniquete == undefined) {
-      this.identificadorTorniquete = localStorage.getItem('sede')
-    } else {
-      localStorage.setItem('sede', LoginPage.sede)
-    }
+    // Verifica si se puede obtener el elemento con el ID "qrCodeInput"
+    (document.getElementById('qrCodeInput'))
+      ? document.getElementById('qrCodeInput').focus()
+      : null;
+    // Asigna el valor de "localStorage.getItem('sede')" a "this.identificadorTorniquete" si es undefined
+    (this.identificadorTorniquete == undefined)
+      ? this.identificadorTorniquete = localStorage.getItem('sede')
+      : localStorage.setItem('sede', LoginPage.sede)
+    // Verifica si hay conexión a internet
     if (navigator.onLine) {
       this.img = "assets/img/donut-step-1.png"
       this.identificadorTorniquete = this.identificadorTorniquete.split(',')
       this.consultarSede(this.identificadorTorniquete['0'])
     } else {
+      // Establece "this.mensaje" en 'sin conexión a internet' y llama a "this.loadDonutError(false)" si no hay conexión a internet
       this.mensaje = 'sin conexión a internet'
       this.loadDonutError(false)
-      // console.log(this.mensaje)
     }
-
   }
 
   consultarSede(idSede) {
@@ -65,7 +65,7 @@ export class HomePage  {
           console.log('Error_int : no se ha encontrado una sede para realizar el registro ')
         }
       }, error => {
-        console.error(error)
+        console.error('error_sedesService',error)
       }
     )
   }
@@ -77,7 +77,6 @@ export class HomePage  {
     if (navigator.onLine) {
       // this.reconeccion();
       this.codigoQR = this.codigoQR.split(',')
-      this.mensajeProcedimiento = "processing"
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
       if (this.sedeCorrespondiente(this.codigoQR[2])) {
         this.mensaje = `Validando la Sede NEWO`
@@ -123,7 +122,6 @@ export class HomePage  {
         console.log(this.mensaje)
       }
     } else {
-      this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexion a internet'
       this.loadDonutError(false)
       // this.reconeccion()
@@ -144,8 +142,7 @@ export class HomePage  {
     let now = new Date()
     let diffTime = (now.getTime() - time.getTime())
     var diffMins = Math.floor(((diffTime % 86400000) % 3600000) / 60000);
-    console.log('diferencia en minutos ' + diffMins)
-    if (diffMins <= 100) {
+    if (diffMins <= 666) {
       return true
     } else {
       return false
@@ -181,7 +178,7 @@ export class HomePage  {
           let auxCurrentDate = new Date(Date.now())
           if (auxDateUltimoRegistro.getDate() == auxCurrentDate.getDate() && auxDateUltimoRegistro.getMonth() == auxCurrentDate.getMonth()) {
             // 2.1 registros en el dia actual
-            if (estadoQR == (auxEntradaMiembros['salida'] ? '0' : '1') || true) {
+            if (estadoQR == (auxEntradaMiembros['salida'] ? '0' : '1') ) {
               // Qr i/o coherente con el ultimo registro => Registrar i/o
               this.registrarEntradaMiembro(estadoQR, auxMiembro['user'])
             } else {
@@ -215,7 +212,6 @@ export class HomePage  {
         // console.log('registroSatisfecho',success)
         this.valueDonut("100");
         this.mensaje = `${estadoQR == '0' ? 'Hola' : 'Esperamos verte pronto'} ${user.firstName} !`
-        this.mensajeProcedimiento = "success"
         this.successDonut()
       }, error => {
         this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
@@ -331,11 +327,11 @@ export class HomePage  {
           let auxCurrentDate = new Date(Date.now())
           if (auxDateUltimoRegistro.getDate() == auxCurrentDate.getDate() && auxDateUltimoRegistro.getMonth() == auxCurrentDate.getMonth()) {
             // 2.1 registros en el dia actual
-            console.log('registros en el dia actual')
-            if (this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida'])) {
+            console.log('registros en el dia actual',auxEntradaInvitado['salida'])
+            if (this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida']) ) {
               this.registrarEntradaInvitado(!auxEntradaInvitado['salida'], auxEntradaInvitado['invitado'])
             } else {
-              this.mensaje = `Código QR no es válido, no corresponde a registro de ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'}`
+              this.mensaje = `Código QR no es válido, no corresponde a registro de ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'} 666`
               console.log(this.mensaje)
               this.loadDonutError(true)
             }
@@ -385,11 +381,11 @@ export class HomePage  {
 
   registrarEntradaInvitado(salida, invitado) {
     const registroEntradaInvitado = this.registroEntradaInvitado(salida, invitado)
+    console.log('invitado',invitado)
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
       success => {
         this.valueDonut("100")
         this.mensaje = `${!salida ? 'Hola' : 'Esperamos verte pronto'} ${invitado.nombre}! `
-        this.mensajeProcedimiento = "success"
         setTimeout(() => {}, 1000);
         this.successDonut()
       }, error => {
@@ -457,41 +453,18 @@ export class HomePage  {
     let donut = document.getElementById('donut');
     let porcentaje = document.getElementById('porcentaje');
     let msgdonut = document.getElementById('msg-donut');
+    let qrImg = document.getElementById('qr-img');
     let msgeError = document.getElementById('error');
     msgdonut.classList.remove('hidden')
-    donut.classList.remove('hidden')
-    porcentaje.classList.remove('hidden')
+    qrImg.classList.remove('hidden')
+    donut.classList.add('hidden')
+    // porcentaje.classList.add('hidden')
     msgeError.classList.add('hidden')
     this.valueDonut(0)
     this.mensaje = "Escanea tu QR en el lector"
     this.codigoQR = ''
     document.getElementById('qrCodeInput').focus()
   }
-
-  reload(status: boolean) {
-    if (navigator.onLine) {
-      if (status) {
-        setTimeout(function () {
-          location.reload();
-        }, 3000);
-      }
-    } else {
-        let i = 0;
-        setInterval(()=>{
-          console.log('interval_reload')
-          if(navigator.onLine){
-            location.reload()
-          } 
-          else if(i==10){
-            this.mensajeProcedimiento = "reset"
-          }
-          else if(!navigator.onLine){
-            i++
-          }
-        }, 6000);
-    }
-  }
-
 
   keypress(event){
     if(event.key=="Enter"){

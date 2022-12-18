@@ -1,0 +1,8 @@
+.content-cards{
+    display: flex;
+    justify-content: space-around;
+    ion-card{
+        width: 30vw;
+        cursor: pointer;
+    }
+}

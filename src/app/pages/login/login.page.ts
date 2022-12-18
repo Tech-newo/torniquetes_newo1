@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController, ToastController } from '@ionic/angular';
+import { AlertController, NavController, ToastController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { LoginService } from '../../services/login/login.service';
 
 @Component({
@@ -16,67 +17,112 @@ export class LoginPage implements OnInit {
     rememberMe: false
   };
   auxSede: string = ''
+  sedeSelect: string = ''
+  typeSelect: string = ''
   public static sede: string
-
+  
   // Our translated text strings
   private loginErrorString: string;
-  mensajeProcedimiento: string;
   public static intervalLog: any;
+  sedes:any = undefined
+  handlerMessage = '';
+  statusLogin: boolean = false;
 
   constructor(
     public translateService: TranslateService,
     public loginService: LoginService,
     public toastController: ToastController,
-    public navController: NavController
-  ) { }
+    public navController: NavController,
+    public sedesService: SedesService,
+    private alertController: AlertController
+    ) { }
 
   ngOnInit() {
-    this.mensajeProcedimiento = "login"
     this.translateService.get('LOGIN_ERROR').subscribe(value => {
       this.loginErrorString = value;
     });
   }
   
   ionViewDidEnter(){
-    LoginPage.intervalLog = setInterval(()=>{
-      console.log("login")
+    setTimeout(() => {
       document.getElementsByName('username')[0]['value'] = "admin";
       document.getElementsByName('password')[0]['value'] = "Gpsglobal2014";
-      document.getElementsByName('auxSede')[0]['value'] = "1502,0";
       setTimeout(() => {
         this.doLogin()
-      }, 950);
-    }, 2000);
+      }, 500);
+      // document.getElementsByName('auxSede')[0]['value'] = "1502,0";
+    }, 1000);
+  }
+
+  searchSedes(){
+    this.sedesService.query().subscribe(
+      success=>{
+        this.sedes = success.body;
+        console.log(this.sedes)
+      },error=>{
+        console.error("error",error);
+      }
+    )
   }
 
   
   async doLogin() {
-    const toast = await this.toastController.create({
-      message: this.loginErrorString,
-      duration: 3000,
-      position: 'top'
-    });
-    LoginPage.sede = this.auxSede
-    if (LoginPage.sede.length > 0) {
       this.loginService.login(this.account).then(
         () => {
-          this.mensajeProcedimiento = "login_true"
-          setTimeout(() => {
-            this.navController.navigateRoot('/tabs');
-          }, 1000);
+          this.searchSedes()
         },
         err => {
-          // Unable to log in
-          this.account.password = '';
-          this.auxSede = '';
-          toast.present();
+          console.log("err_loginService",err)
         }
       );
-    } else {
-      this.account.password = '';
-      this.auxSede = '';
-      toast.present();
-    }
+  }
 
+  changeSede(event){
+    console.log("event",event)
+  }
+
+  async selectOptions(){
+    if(this.sedeSelect === ''){
+      this.alerts('Selecciona la sede.')
+    }
+    else if(this.typeSelect === ''){
+      this.alerts('Selecciona el tipo de torniquete.')
+    }else{
+      LoginPage.sede = this.auxSede
+      this.statusLogin = true
+      // this.navController.navigateRoot('/tabs')
+    }
+  }
+
+  clickCard(type){
+    if(type == 'qr'){
+      this.navController.navigateRoot('/tabs')
+    }else{
+      this.alerts('¡Modulo en desarrollo!')
+    }
+  }
+
+  async alerts(message:any){
+    const alert = await this.alertController.create({
+      header: message,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            this.handlerMessage = 'Alert canceled';
+          },
+        },
+        {
+          text: 'OK',
+          role: 'confirm',
+          handler: () => {
+            this.handlerMessage = 'Alert confirmed';
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }
