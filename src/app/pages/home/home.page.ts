@@ -11,7 +11,6 @@ import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
 import { LoginPage } from '../login/login.page';
 
-
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -25,6 +24,8 @@ export class HomePage  {
   mensaje: any = "Escanea tu QR en el lector"
   img: any = ""
   mensajeProcedimiento: any = ""
+  lastId:any = undefined
+  newId:any = undefined
   constructor(
     public navController: NavController,
     public sedesService: SedesService,
@@ -38,24 +39,16 @@ export class HomePage  {
   ionViewDidEnter() {
     clearInterval(LoginPage.intervalLog);
     document.getElementById('qrCodeInput').focus()
-    this.mensajeProcedimiento = "starting"
     if (this.identificadorTorniquete == undefined) {
       this.identificadorTorniquete = localStorage.getItem('sede')
     } else {
       localStorage.setItem('sede', LoginPage.sede)
     }
-
     if (navigator.onLine) {
       this.img = "assets/img/donut-step-1.png"
       this.identificadorTorniquete = this.identificadorTorniquete.split(',')
       this.consultarSede(this.identificadorTorniquete['0'])
-      
-      setTimeout(() => {
-        this.mensajeProcedimiento = "processing"
-      }, 3000);
-      
     } else {
-      this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexión a internet'
       this.loadDonutError(false)
       // console.log(this.mensaje)
@@ -70,7 +63,6 @@ export class HomePage  {
           this.sedeTorniquete = success.body['0']
         } else {
           console.log('Error_int : no se ha encontrado una sede para realizar el registro ')
-          this.mensajeProcedimiento = "reset"
         }
       }, error => {
         console.error(error)
@@ -83,9 +75,7 @@ export class HomePage  {
   obtenerCodigoQR() {
     // console.log("navigator.onLine",navigator.onLine)
     if (navigator.onLine) {
-
-      this.reconeccion();
-        
+      // this.reconeccion();
       this.codigoQR = this.codigoQR.split(',')
       this.mensajeProcedimiento = "processing"
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
@@ -136,7 +126,7 @@ export class HomePage  {
       this.mensajeProcedimiento = "lost connection"
       this.mensaje = 'sin conexion a internet'
       this.loadDonutError(false)
-      this.reconeccion()
+      // this.reconeccion()
     }
 
   }
@@ -155,7 +145,7 @@ export class HomePage  {
     let diffTime = (now.getTime() - time.getTime())
     var diffMins = Math.floor(((diffTime % 86400000) % 3600000) / 60000);
     console.log('diferencia en minutos ' + diffMins)
-    if (diffMins <= 10) {
+    if (diffMins <= 100) {
       return true
     } else {
       return false
@@ -191,7 +181,7 @@ export class HomePage  {
           let auxCurrentDate = new Date(Date.now())
           if (auxDateUltimoRegistro.getDate() == auxCurrentDate.getDate() && auxDateUltimoRegistro.getMonth() == auxCurrentDate.getMonth()) {
             // 2.1 registros en el dia actual
-            if (estadoQR == (auxEntradaMiembros['salida'] ? '0' : '1')) {
+            if (estadoQR == (auxEntradaMiembros['salida'] ? '0' : '1') || true) {
               // Qr i/o coherente con el ultimo registro => Registrar i/o
               this.registrarEntradaMiembro(estadoQR, auxMiembro['user'])
             } else {
@@ -218,18 +208,56 @@ export class HomePage  {
   }
 
   registrarEntradaMiembro(estadoQR, user) {
+    this.verificarUltimoRegistroMiembro(user)
     const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
-        this.valueDonut("100")
+        // console.log('registroSatisfecho',success)
+        this.valueDonut("100");
         this.mensaje = `${estadoQR == '0' ? 'Hola' : 'Esperamos verte pronto'} ${user.firstName} !`
         this.mensajeProcedimiento = "success"
-        setTimeout(() => {}, 1000);
         this.successDonut()
       }, error => {
         this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
         console.log(this.mensaje)
         this.loadDonutError(true)
+      }
+    )
+  }
+
+  verificarUltimoRegistroMiembro(user){
+    if(this.lastId === undefined){
+      this.entradaMiembrosService.query({
+        'userId.equals':user.id,
+        sort:["registroFecha,desc"],
+      }).subscribe(
+        success=>{
+          this.lastId = success.body[0].id;
+          this.confirmarNuevoRegistroMiembro(user)
+        },error=>{
+          console.error("error",error);
+        }
+      )
+    }else{
+      this.confirmarNuevoRegistroMiembro(user)
+    }
+  }
+
+  confirmarNuevoRegistroMiembro(user){
+    this.entradaMiembrosService.query({
+      'userId.equals':user.id,
+      sort:["registroFecha,desc"],
+    }).subscribe(
+      success=>{
+        this.newId = success.body[0].id;
+        if(this.lastId === this.newId){
+          console.log("no se ha creado nuevo registro")
+          this.verificarUltimoRegistroMiembro(user)
+        }else{
+          this.successDonut()
+        }
+      },error=>{
+        console.error("error",error);
       }
     )
   }
@@ -394,10 +422,9 @@ export class HomePage  {
       qrimg.classList.add('hidden');
       error.classList.remove('hidden');
     }, 500);
-    this.reload(status)
-    if (status) {
-      this.mensajeProcedimiento = "error"
-    }
+    setTimeout(() => {
+      this.resetDonut()
+    }, 1500);
   }
 
   loadDonut() {
@@ -419,29 +446,26 @@ export class HomePage  {
   }
 
   successDonut() {
-    this.mensajeProcedimiento = "registro"
-    // console.log("Hola mundo")
-    let donut = document.getElementById('porcentaje');
-    let imgdonut = document.getElementById('img-donut');
-    let msgdonut = document.getElementById('msg-donut');
     this.img = "assets/img/donut-step-5.png"
+    setTimeout(() => {
+      this.resetDonut()
+    }, 2300);
+  }
 
-    setTimeout(function () {
-      imgdonut.classList.add('scale-out');
-      donut.classList.add('scale-out');
-    }, 1600);
-
-
-    setTimeout(function () {
-      imgdonut.classList.add('scale-in')
-      msgdonut.classList.add('scale-out');
-    }, 2050);
-
-    setTimeout(function () {
-      msgdonut.classList.add('hidden')
-      donut.classList.add('hidden')
-    }, 2200);
-    this.reload(true)
+  resetDonut(){
+    this.img = "assets/img/donut-step-1.png"
+    let donut = document.getElementById('donut');
+    let porcentaje = document.getElementById('porcentaje');
+    let msgdonut = document.getElementById('msg-donut');
+    let msgeError = document.getElementById('error');
+    msgdonut.classList.remove('hidden')
+    donut.classList.remove('hidden')
+    porcentaje.classList.remove('hidden')
+    msgeError.classList.add('hidden')
+    this.valueDonut(0)
+    this.mensaje = "Escanea tu QR en el lector"
+    this.codigoQR = ''
+    document.getElementById('qrCodeInput').focus()
   }
 
   reload(status: boolean) {
@@ -454,6 +478,7 @@ export class HomePage  {
     } else {
         let i = 0;
         setInterval(()=>{
+          console.log('interval_reload')
           if(navigator.onLine){
             location.reload()
           } 
@@ -467,32 +492,6 @@ export class HomePage  {
     }
   }
 
-  reconeccion(){
-    let i = 0;
-      setInterval(()=>{
-        console.log(i)
-        if(i==10){
-          this.mensajeProcedimiento = `not_internet`
-        }
-        if(i>=10){
-          this.mensajeProcedimiento = `not_internet`
-          this.mensaje = `Conectando a internet `+i+` segundos` 
-        }
-        if(i==20 && navigator.onLine){
-          this.mensajeProcedimiento = `reconnect_internet`
-        }
-        if(i>=20 && navigator.onLine){
-          this.mensaje = `Reconectando por favor espere` 
-          setTimeout(() => {
-            location.reload()
-          }, 3000);
-        }
-        if(i>=20 && !navigator.onLine){
-          this.mensaje = `Conectando a internet `+i+` segundos`
-        }
-        i++
-      }, 1000);
-  }
 
   keypress(event){
     if(event.key=="Enter"){

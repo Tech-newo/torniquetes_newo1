@@ -93,17 +93,19 @@ body{
 }
 
 .scale-out{
-    animation: scaleOut 2s ease-out;
+    animation: scaleOut 1s ease-out;
 }
 
 .scale-in{
-    animation: scaleIn 1s ease-out;
+    animation: scaleIn .8s ease-out;
     transform: scale(2.2);
     z-index: 100;
 }
+
 h1{
     color: white;
 }
+
 .img h1{
     font-family: Arial, Helvetica, sans-serif;
     font-size: 20pt;
@@ -120,7 +122,7 @@ h1{
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: scaleMesagge infinite 2s;
+    animation: scaleMesagge infinite 1.5s;
 }
 
 .img h2{

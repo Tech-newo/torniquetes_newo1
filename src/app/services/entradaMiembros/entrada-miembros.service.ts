@@ -3,6 +3,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EntradaMiembros } from './entrada-miembors.model';
+import { createRequestOption } from 'src/app/shared';
 
 @Injectable({ providedIn: 'root'})
 export class EntradaMiembrosService {
@@ -17,4 +18,10 @@ export class EntradaMiembrosService {
     findLastRegistryByUserId(id:number): Observable<HttpResponse<EntradaMiembros>> {
         return this.http.get(`${this.resourceUrl}?userId.equals=${id}&page=0&size=1&sort=id,desc`, { observe: 'response'});
     }
+
+    query(req?: any): Observable<HttpResponse<EntradaMiembros>> {
+        const options = createRequestOption(req);
+        return this.http.get<EntradaMiembros>(this.resourceUrl, { params: options, observe: 'response' });
+      }
+    
 }

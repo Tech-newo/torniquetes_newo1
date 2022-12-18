@@ -42,7 +42,7 @@ export class LoginPage implements OnInit {
       console.log("login")
       document.getElementsByName('username')[0]['value'] = "admin";
       document.getElementsByName('password')[0]['value'] = "Gpsglobal2014";
-      // document.getElementsByName('auxSede')[0]['value'] = "1502,0";
+      document.getElementsByName('auxSede')[0]['value'] = "1502,0";
       setTimeout(() => {
         this.doLogin()
       }, 950);
