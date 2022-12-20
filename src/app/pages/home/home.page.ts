@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { EntradaInvitados } from 'src/app/services/entradaInvitados/entrada-invitados.model';
@@ -33,6 +34,7 @@ export class HomePage  {
     public entradaMiembrosService: EntradaMiembrosService,
     public entradaInvitadosService: EntradaInvitadosService,
     public invitacionService: InvitacionService,
+    private http: HttpClient,
   ) { }
 
   ionViewDidEnter() {
@@ -442,10 +444,31 @@ export class HomePage  {
   }
 
   successDonut() {
+    this.activatePin()
     this.img = "assets/img/donut-step-5.png"
     setTimeout(() => {
       this.resetDonut()
     }, 2300);
+  }
+
+  activatePin(){
+    this.http.get('http://localhost:8000/encender/7').subscribe(
+      success=>{
+        console.log("success_ON_pin",success)
+      },error=>{
+        console.error("error_ON_pin",error)
+      }
+    )
+
+    setTimeout(() => {
+      this.http.get('http://localhost:8000/apagar/7').subscribe(
+        success=>{
+          console.log("success_OFF_pin",success)
+        },error=>{
+          console.error("error_OFF_pin",error)
+        }
+      )
+    }, 3000);
   }
 
   resetDonut(){
