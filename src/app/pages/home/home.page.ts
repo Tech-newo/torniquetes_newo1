@@ -452,20 +452,20 @@ export class HomePage  {
   }
 
   activatePin(){
-    this.http.get('http://localhost:8000/encender/7').subscribe(
+    this.http.get('http://localhost:8000/apagar/7').subscribe(
       success=>{
-        console.log("success_ON_pin",success)
+        console.log("success_OFF_pin",success)
       },error=>{
-        console.error("error_ON_pin",error)
+        console.error("error_OFF_pin",error)
       }
     )
 
     setTimeout(() => {
-      this.http.get('http://localhost:8000/apagar/7').subscribe(
+      this.http.get('http://localhost:8000/encender/7').subscribe(
         success=>{
-          console.log("success_OFF_pin",success)
+          console.log("success_ON_pin",success)
         },error=>{
-          console.error("error_OFF_pin",error)
+          console.error("error_ON_pin",error)
         }
       )
     }, 3000);
