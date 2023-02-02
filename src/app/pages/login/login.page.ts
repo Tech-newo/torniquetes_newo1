@@ -18,7 +18,8 @@ export class LoginPage implements OnInit {
   };
   auxSede: string = ''
   sedeSelect: string = ''
-  typeSelect: string = ''
+  PINE: string = ''
+  PINS: string = ''
   public static sede: string
   
   // Our translated text strings
@@ -81,13 +82,19 @@ export class LoginPage implements OnInit {
     console.log("event",event)
   }
 
-  async selectOptions(){
-    if(this.sedeSelect === ''){
+  async selectOptions() {
+    if (this.sedeSelect === '') {
       this.alerts('Selecciona la sede.')
     }
-    else if(this.typeSelect === ''){
-      this.alerts('Selecciona el tipo de torniquete.')
-    }else{
+    else if (this.PINE === '') {
+      this.alerts('Selecciona el pin de activación del torniquete de entrada')
+    }
+    else if (this.PINS === '') {
+      this.alerts('Selecciona el pin de activación del torniquete de salida')
+    }
+    else if (this.PINE === this.PINS){
+      this.alerts('Debes seleccionar pines diferentes.')
+    } else {
       LoginPage.sede = this.auxSede
       this.statusLogin = true
       // this.navController.navigateRoot('/tabs')

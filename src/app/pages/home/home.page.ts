@@ -45,6 +45,8 @@ export class HomePage  {
     // Asigna el valor de "localStorage.getItem('sede')" a "this.identificadorTorniquete" si es undefined
     (this.identificadorTorniquete == undefined)
       ? this.identificadorTorniquete = localStorage.getItem('sede')
+      // ? this.identificadorTorniquete = localStorage.getItem('pinIn')
+      // ? this.identificadorTorniquete = localStorage.getItem('pinOut')
       : localStorage.setItem('sede', LoginPage.sede)
     // Verifica si hay conexión a internet
     if (navigator.onLine) {
@@ -75,44 +77,46 @@ export class HomePage  {
 
   /* Validacion Inicial */
   obtenerCodigoQR() {
-    // console.log("navigator.onLine",navigator.onLine)
+    console.log("navigator.onLine",navigator.onLine)
     if (navigator.onLine) {
       // this.reconeccion();
-      this.codigoQR = this.codigoQR.split(',')
+      this.codigoQR = this.codigoQR.split(',')///debe quedar sin el prefijo
+      console.log('codigoQR', this.codigoQR)
+      // separar el prefijo guardarlo en una variable iedntificarlo
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
       if (this.sedeCorrespondiente(this.codigoQR[2])) {
         this.mensaje = `Validando la Sede NEWO`
         this.loadDonut()
         this.valueDonut("15")
         // 2. Validar el tipo de Qr y registrar sus datos
-        if (this.codigoQR[0] == 1) {
+        if (this.codigoQR[1] == 1) {
           this.mensaje = `Validando tu código QR`
           this.valueDonut("25")
           // 3. Validar vigencia Qr
-          if (this.codigoQrVigente(this.codigoQR[4])) {
-            this.mensaje = `Validando tu código QR`
-            this.valueDonut("35")
+          if (this.codigoQrVigente(this.codigoQR[5])) {
+            this.mensaje = 'Validando tu identidad'
+            this.valueDonut("50")
+            this.validarMiembro(this.codigoQR[2], this.codigoQR[0])
             // 4. codigoQr corresponde al torniquete 
-            if (this.codigoCorrespondiente(this.codigoQR[3])) {
-              this.mensaje = 'Validando tu identidad'
-              this.valueDonut("50")
-              this.validarMiembro(this.codigoQR[1], this.codigoQR[3])
-            } else {
-              this.mensaje = `Código QR es inválido, genera un código QR nuevo y vuelve a intentarlo`
-              this.loadDonutError(true)
-              console.log(this.mensaje)
-            }
+            // if (this.codigoCorrespondiente(this.codigoQR[0])) {
+            //   this.mensaje = 'Validando tu identidad'
+            //   this.valueDonut("50")
+            //   this.validarMiembro(this.codigoQR[1], this.codigoQR[0])
+            // } else {
+            //   this.mensaje = `Código QR es inválido, genera un código QR nuevo y vuelve a intentarlo`
+            //   this.loadDonutError(true)
+            //   console.log(this.mensaje)
+            // }
           } else {
             this.mensaje = 'Código QR ha expirado, genera uno nuevo'
             this.loadDonutError(true)
             console.log(this.mensaje)
           }
-        } else if (this.codigoQR[0] == 2) {
+        } else if (this.codigoQR[1] == 2) {
           this.mensaje = 'Validando tu identidad'
           this.valueDonut("50")
-          this.validarInvitado(this.codigoQR[1])
+          this.validarInvitado(this.codigoQR[2], this.codigoQR[0])
         } else {
-          
           this.mensaje = 'Código QR no es válido'
           this.loadDonutError(true)
           console.log(this.mensaje)
@@ -135,9 +139,9 @@ export class HomePage  {
     return (Number(this.identificadorTorniquete[0]) === Number(sedeCogdigo))
   }
 
-  codigoCorrespondiente(estadoCogdigo) {
-    return (Number(this.identificadorTorniquete[1]) === Number(estadoCogdigo))
-  }
+  // codigoCorrespondiente(estadoCogdigo) {
+  //   return (Number(this.identificadorTorniquete[1]) === Number(estadoCogdigo))
+  // }
 
   codigoQrVigente(validesQR) {
     var time = new Date(Number(validesQR))
@@ -207,14 +211,14 @@ export class HomePage  {
   }
 
   registrarEntradaMiembro(estadoQR, user) {
-    this.verificarUltimoRegistroMiembro(user)
+    this.verificarUltimoRegistroMiembro(user,estadoQR)
     const auxRegistroEntradaMiembro = this.registroEntradaMiembro(estadoQR, user)
     this.entradaMiembrosService.create(auxRegistroEntradaMiembro).subscribe(
       success => {
         // console.log('registroSatisfecho',success)
         this.valueDonut("100");
         this.mensaje = `${estadoQR == '0' ? 'Hola' : 'Esperamos verte pronto'} ${user.firstName} !`
-        this.successDonut()
+        this.successDonut(estadoQR)
       }, error => {
         this.mensaje = `${user.firstname} no fue posible realizar el registro, intenta nuevamente `
         console.log(this.mensaje)
@@ -223,7 +227,7 @@ export class HomePage  {
     )
   }
 
-  verificarUltimoRegistroMiembro(user){
+  verificarUltimoRegistroMiembro(user, estadoQR){
     if(this.lastId === undefined){
       this.entradaMiembrosService.query({
         'userId.equals':user.id,
@@ -231,17 +235,17 @@ export class HomePage  {
       }).subscribe(
         success=>{
           this.lastId = success.body[0].id;
-          this.confirmarNuevoRegistroMiembro(user)
+          this.confirmarNuevoRegistroMiembro(user, estadoQR)
         },error=>{
           console.error("error",error);
         }
       )
     }else{
-      this.confirmarNuevoRegistroMiembro(user)
+      this.confirmarNuevoRegistroMiembro(user, estadoQR)
     }
   }
 
-  confirmarNuevoRegistroMiembro(user){
+  confirmarNuevoRegistroMiembro(user,estadoQR){
     this.entradaMiembrosService.query({
       'userId.equals':user.id,
       sort:["registroFecha,desc"],
@@ -250,9 +254,9 @@ export class HomePage  {
         this.newId = success.body[0].id;
         if(this.lastId === this.newId){
           console.log("no se ha creado nuevo registro")
-          this.verificarUltimoRegistroMiembro(user)
+          this.verificarUltimoRegistroMiembro(user, estadoQR)
         }else{
-          this.successDonut()
+          this.successDonut(estadoQR)
         }
       },error=>{
         console.error("error",error);
@@ -274,7 +278,7 @@ export class HomePage  {
 
 
   /* Validacion Invitados */
-  validarInvitado(idInvitacion) {
+  validarInvitado(idInvitacion, estadoQR) {
     // 1.Validar validez invitacion
     this.invitacionService.findById(idInvitacion).subscribe(
       success => {
@@ -288,7 +292,7 @@ export class HomePage  {
                   let auxMiembro = success.body['0']
                   if (this.accesoPermitidoMiembro(auxMiembro['nivel']['ingresoSedes'], auxMiembro['user']['activated'])) {
                     // miembro con acceso permitido
-                    this.validarEntradaInvitado(auxInvitacion)
+                    this.validarEntradaInvitado(auxInvitacion, estadoQR)
                   } else {
                     this.mensaje = ' La persona que te ha invitado no cuenta con acceso a nuestras sedes NEWO'
                     this.loadDonutError(true)
@@ -319,11 +323,12 @@ export class HomePage  {
     )
   }
 
-  validarEntradaInvitado(auxInvitacion) {
+  validarEntradaInvitado(auxInvitacion, estadoQR) {
     this.entradaInvitadosService.findLastRegistryByGuestId(auxInvitacion['invitado']['id']).subscribe(
       success => {
         if (success.body['0'] !== undefined) {
           let auxEntradaInvitado = success.body['0']
+          console.log('auxEntradaInvitado', auxEntradaInvitado)
           // 1. Validar que el ultimo registro si sea del dia actual
           let auxDateUltimoRegistro = new Date(auxEntradaInvitado['registroFecha'])
           let auxCurrentDate = new Date(Date.now())
@@ -331,7 +336,7 @@ export class HomePage  {
             // 2.1 registros en el dia actual
             console.log('registros en el dia actual',auxEntradaInvitado['salida'])
             if (this.validarUltimoRegistroSalidaTorniquete(!auxEntradaInvitado['salida']) ) {
-              this.registrarEntradaInvitado(!auxEntradaInvitado['salida'], auxEntradaInvitado['invitado'])
+              this.registrarEntradaInvitado(!auxEntradaInvitado['salida'], auxEntradaInvitado['invitado'], estadoQR)
             } else {
               this.mensaje = `Código QR no es válido, no corresponde a registro de ${auxEntradaInvitado['salida'] ? 'salida' : 'entrada'} 666`
               console.log(this.mensaje)
@@ -341,7 +346,7 @@ export class HomePage  {
             // 2.2 primer registro del dia => Registrar Entrada
             console.log('primer registro del dia => Registrar Entrada')
             if (this.validarUltimoRegistroSalidaTorniquete(false)) {
-              this.registrarEntradaInvitado(false, auxEntradaInvitado['invitado'])
+              this.registrarEntradaInvitado(false, auxEntradaInvitado['invitado'], estadoQR)
             } else {
               this.mensaje = `Al parecer no cuentas con un registro de ingreso, comunícate con uno de nuestros host.`
               console.log(this.mensaje)
@@ -351,7 +356,7 @@ export class HomePage  {
         } else {
           // primer registro historico => Registrar Entrada
           if (this.validarUltimoRegistroSalidaTorniquete(false)) {
-            this.registrarEntradaInvitado(false, auxInvitacion['invitado'])
+            this.registrarEntradaInvitado(false, auxInvitacion['invitado'], estadoQR)
           } else {
             this.mensaje = `Al parecer no cuentas con un registro de ingreso, comunícate con uno de nuestros host.`
             console.log(this.mensaje)
@@ -381,7 +386,7 @@ export class HomePage  {
   }
 
 
-  registrarEntradaInvitado(salida, invitado) {
+  registrarEntradaInvitado(salida, invitado, estadoQR) {
     const registroEntradaInvitado = this.registroEntradaInvitado(salida, invitado)
     console.log('invitado',invitado)
     this.entradaInvitadosService.create(registroEntradaInvitado).subscribe(
@@ -389,7 +394,7 @@ export class HomePage  {
         this.valueDonut("100")
         this.mensaje = `${!salida ? 'Hola' : 'Esperamos verte pronto'} ${invitado.nombre}! `
         setTimeout(() => {}, 1000);
-        this.successDonut()
+        this.successDonut(estadoQR)
       }, error => {
         this.mensaje = `${invitado.nombre} no fue posible realizar el registro, intenta nuevamente `
       }
@@ -443,16 +448,25 @@ export class HomePage  {
     }, 200);
   }
 
-  successDonut() {
-    this.activatePin()
-    this.img = "assets/img/donut-step-5.png"
-    setTimeout(() => {
-      this.resetDonut()
-    }, 2300);
+  successDonut(estadoQR) {
+    if(Number(estadoQR) == 0){
+      this.activatePinE()
+      this.img = "assets/img/donut-step-5.png"
+      setTimeout(() => {
+        this.resetDonut()
+      }, 2300);
+    }else{
+      this.activatePinS()
+      this.img = "assets/img/donut-step-5.png"
+      setTimeout(() => {
+        this.resetDonut()
+      }, 2300);
+    }
+    
   }
 
-  activatePin(){
-    this.http.get('http://localhost:8000/apagar/7').subscribe(
+  activatePinE(){
+    this.http.get(`http://localhost:8000/apagar/${this.identificadorTorniquete[1]}` ).subscribe(
       success=>{
         console.log("success_OFF_pin",success)
       },error=>{
@@ -461,7 +475,27 @@ export class HomePage  {
     )
 
     setTimeout(() => {
-      this.http.get('http://localhost:8000/encender/7').subscribe(
+      this.http.get(`http://localhost:8000/encender/${this.identificadorTorniquete[1]}`).subscribe(
+        success=>{
+          console.log("success_ON_pin",success)
+        },error=>{
+          console.error("error_ON_pin",error)
+        }
+      )
+    }, 3000);
+  }
+
+  activatePinS(){
+    this.http.get(`http://localhost:8000/apagar/${this.identificadorTorniquete[2]}` ).subscribe(
+      success=>{
+        console.log("success_OFF_pin",success)
+      },error=>{
+        console.error("error_OFF_pin",error)
+      }
+    )
+
+    setTimeout(() => {
+      this.http.get(`http://localhost:8000/encender/${this.identificadorTorniquete[2]}`).subscribe(
         success=>{
           console.log("success_ON_pin",success)
         },error=>{
