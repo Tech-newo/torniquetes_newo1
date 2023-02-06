@@ -84,12 +84,12 @@ export class HomePage  {
       console.log('codigoQR', this.codigoQR)
       // separar el prefijo guardarlo en una variable iedntificarlo
       // 1. Validar que la sede del codigoQR corresponda al idSedeTorniquete
-      if (this.sedeCorrespondiente(this.codigoQR[2])) {
+      if (this.sedeCorrespondiente(this.codigoQR[3])) {
         this.mensaje = `Validando la Sede NEWO`
         this.loadDonut()
         this.valueDonut("15")
         // 2. Validar el tipo de Qr y registrar sus datos
-        if (this.codigoQR[1] == 1) {
+        if (Number(this.codigoQR[1]) == 1) {
           this.mensaje = `Validando tu código QR`
           this.valueDonut("25")
           // 3. Validar vigencia Qr
@@ -112,7 +112,7 @@ export class HomePage  {
             this.loadDonutError(true)
             console.log(this.mensaje)
           }
-        } else if (this.codigoQR[1] == 2) {
+        } else if (Number(this.codigoQR[1]) == 2) {
           this.mensaje = 'Validando tu identidad'
           this.valueDonut("50")
           this.validarInvitado(this.codigoQR[2], this.codigoQR[0])
@@ -136,6 +136,7 @@ export class HomePage  {
   }
 
   sedeCorrespondiente(sedeCogdigo) {
+    console.log('sede config i', this.identificadorTorniquete[0], 'sede Qr', sedeCogdigo)
     return (Number(this.identificadorTorniquete[0]) === Number(sedeCogdigo))
   }
 
@@ -381,7 +382,7 @@ export class HomePage  {
   }
 
   validarUltimoRegistroSalidaTorniquete(ultimoRegistroInvitado) {
-    let salidaTorniquete = (this.identificadorTorniquete['1'] === '1' ? true : false)
+    let salidaTorniquete = (this.codigoQR[0] === '1' ? true : false)
     return salidaTorniquete === ultimoRegistroInvitado
   }
 
