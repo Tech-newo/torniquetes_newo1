@@ -17,10 +17,12 @@ export class LoginPage implements OnInit {
     rememberMe: false
   };
   auxSede: string = ''
+  PINE:any
+  PINS:any
   sedeSelect: string = ''
-  PINE: string = ''
-  PINS: string = ''
-  public static sede: string
+  public static SEDE: string
+  public static PIN_INPUT: string
+  public static PIN_OUTPUT: string
   
   // Our translated text strings
   private loginErrorString: string;
@@ -83,21 +85,27 @@ export class LoginPage implements OnInit {
   }
 
   async selectOptions() {
+    LoginPage.SEDE = this.sedeSelect
+    LoginPage.PIN_INPUT = this.PINE
+    LoginPage.PIN_OUTPUT = this.PINS
     if (this.sedeSelect === '') {
       this.alerts('Selecciona la sede.')
     }
-    else if (this.PINE === '') {
+    else if (LoginPage.PIN_INPUT === '') {
       this.alerts('Selecciona el pin de activación del torniquete de entrada')
     }
-    else if (this.PINS === '') {
+    else if (LoginPage.PIN_OUTPUT === '') {
       this.alerts('Selecciona el pin de activación del torniquete de salida')
     }
-    else if (this.PINE === this.PINS){
+    else if (LoginPage.PIN_OUTPUT === LoginPage.PIN_INPUT){
+
       this.alerts('Debes seleccionar pines diferentes.')
     } else {
-      LoginPage.sede = this.auxSede
-      this.statusLogin = true
-      // this.navController.navigateRoot('/tabs')
+        localStorage.setItem('sede',LoginPage.SEDE)
+        localStorage.setItem('pin_out',LoginPage.PIN_INPUT)
+        localStorage.setItem('pin_out',LoginPage.PIN_OUTPUT)
+        this.statusLogin = true
+        // this.navController.navigateRoot('/tabs')
     }
   }
 
