@@ -20,9 +20,9 @@ import { LoginPage } from '../login/login.page';
 export class HomePage  {
   account: Account;
   codigoQR: any = ''
-  identificadorTorniquete: any = LoginPage.SEDE
-  pin_input: any = LoginPage.PIN_INPUT
-  pin_output: any = LoginPage.PIN_OUTPUT
+  identificadorTorniquete: any = localStorage.getItem('sede')
+  pin_input: any = localStorage.getItem('pin_out')
+  pin_output: any = localStorage.getItem('pin_out')
   sedeTorniquete: any = []
   mensaje: any = "Escanea tu QR en el lector"
   img: any = ""
@@ -41,11 +41,8 @@ export class HomePage  {
   ) { }
 
   ionViewDidEnter() {
-    console.log("sede",localStorage.getItem('sede'))
-    console.log("pin_out",localStorage.getItem('pin_out'))
-    console.log("pin_out",localStorage.getItem('pin_out'))
 
-    document.getElementById('qrCodeInput')
+    (document.getElementById('qrCodeInput'))
       ? document.getElementById('qrCodeInput').focus()
       : null;
   
@@ -60,14 +57,144 @@ export class HomePage  {
       this.codeSend = {}
       this.codeSend.typeRegister = code[0] //entrada 0 salida 1
       this.codeSend.typeUser = code[1] //usuario 1 invitado 2
-      this.codeSend.iduser = code[2] //id_usuario / id_invitado 2
-      this.codeSend.sede = localStorage.getItem('sede'); //sede
-      this.codeSend.dateRegister = new Date(); //fecha registro
+      this.codeSend.idUser = code[2] //id_usuario / id_invitado 2
+      this.codeSend.sede = localStorage.getItem('sede') //sede
+      this.codeSend.dateRegister = new Date().toISOString() //fecha registro
+      this.codeSend.dateInvitation = code[5];
       (this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1')
         ? this.processCode(this.codeSend)
         : this.resetDonut()
     }
   }
+
+   processCode(code:any){
+    this.mensaje = 'Validando tu código QR'
+    this.loadDonut()
+    this.valueDonut(25);
+    if(code.typeUser != '' || code.typeUser != undefined){
+      this.controller(code)
+    }
+  }
+
+  async controller(code:any){
+    if(code.typeUser === '1'){
+      this.validateMember(code.idUser)
+    }else{
+      if(await this.validateTimeInvitation(code.idUser)){
+        this.valueDonut(100)
+        this.successDonut(Number(this.codeSend.typeRegister));
+        this.sendWebHook()
+      }else{
+        this.loadDonutError(true)
+        this.mensaje = "Código QR ha expirado, genera uno nuevo"
+      }
+    }
+  }
+
+    validateMember(id:any){
+      this.mensaje = 'Validando miembro.'
+      this.valueDonut(100)
+      const fechaFin = new Date().toISOString();
+      const fechaActual = this.codeSend.dateInvitation;
+      const diferenciaEnMilisegundos = new Date(fechaActual).getTime() - new Date(fechaFin).getTime();
+
+      const time = new Date(this.codeSend.dateInvitation)
+      const now = new Date()
+      const diffTime = (now.getTime() - time.getTime())
+      const diffMins = Math.floor(((diffTime % 86400000) % 3600000) / 60000);
+
+
+      console.log(`fechaActual: ${fechaActual}`)
+      console.log(`fechaFin ${fechaFin}`)
+      console.log(`time ${time}`)
+      console.log(`now ${now}`)
+      console.log(`diffTime ${diffTime}`)
+      console.log(`diffMins ${diffMins}`)
+      console.log(`diferenciaEnMilisegundos ${diferenciaEnMilisegundos}`)
+      this.successDonut(Number(this.codeSend.typeRegister));
+      this.sendWebHook()
+    }
+
+  async validateTimeInvitation(id: any): Promise<boolean> {
+    let resultado = false;
+    this.mensaje = 'Validando invitado.';
+    this.valueDonut(50);
+    try {
+      const success = await this.invitacionService.findById(id).toPromise();
+      const fechaFin = success.body[0].fechaFin;
+      const fechaActual = new Date().toISOString();
+      if (fechaFin > fechaActual) {
+        this.valueDonut(75);
+        const miembroSuccess = await this.miembrosService.query({
+          'userId.equals':success.body[0].invitado.user.id
+        }).toPromise();
+        const ingresoSedes =  miembroSuccess.body[0].nivel.ingresoSedes
+        const userActivated = miembroSuccess.body[0].user.activated;
+        (ingresoSedes && userActivated)
+          ? resultado = true
+          : resultado = false
+      } else {
+        resultado = false;
+      }
+    } catch (error) {
+      console.error("error_invitacionService", error);
+    }
+    return resultado;
+  }
+
+  sendWebHook(){
+    this.http.post('https://hook.us1.make.com/y9u1ykoqw8hocogunfuus3v0hjystcgi', this.codeSend, {responseType: 'text'}).subscribe(
+      (response) => {
+      },
+      (error) => {
+        console.error('Error en la petición:', error);
+      }
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  resetAll(){
+    localStorage.setItem('sede','')
+    localStorage.setItem('pin_out','')
+    localStorage.setItem('pin_out','')
+    this.navController.navigateRoot('/')
+  }
+
+
+
+
 
   autofocus(){
     setTimeout(() => {
@@ -79,17 +206,16 @@ export class HomePage  {
     }, 1000);
   }
 
-   processCode(code){
-    console.log('processCode',code)
-    this.loadDonut()
-  }
 
-  resetAll(){
-    localStorage.setItem('sede','')
-    localStorage.setItem('pin_out','')
-    localStorage.setItem('pin_out','')
-    this.navController.navigateRoot('/')
-  }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -121,10 +247,11 @@ export class HomePage  {
     }, 500);
     setTimeout(() => {
       this.resetDonut()
-    }, 1500);
+    }, 3000);
   }
 
   loadDonut() {
+    this.img = "assets/img/donut-step-1.png"
     let donut = document.getElementById('donut');
     let qrimg = document.getElementById('qr-img');
     let msgerror = document.getElementById('error');
@@ -137,31 +264,31 @@ export class HomePage  {
     let rootElement = document.documentElement;
     setTimeout(function () {
       const donutVal = val;
-      // console.log("valueDonut", donutVal)
       rootElement.style.setProperty("--donut-value-medicion", donutVal);
     }, 200);
   }
 
-  successDonut(estadoQR) {
-    if(Number(estadoQR) == 0){
+  successDonut(estadoQR:number) {
+    if(estadoQR == 0){
+      this.mensaje = "Saliendo"
       this.activatePinE()
       this.img = "assets/img/donut-step-5.png"
       setTimeout(() => {
         this.resetDonut()
-      }, 2300);
+      }, 3000);
     }else{
+      this.mensaje = "Entrando"
       this.activatePinS()
       this.img = "assets/img/donut-step-5.png"
       setTimeout(() => {
         this.resetDonut()
-      }, 2300);
+      }, 3000);
     }
     
   }
 
 
   resetDonut(){
-    console.log("resetDonut")
     this.img = "assets/img/donut-step-1.png"
     let donut = document.getElementById('donut');
     let porcentaje = document.getElementById('porcentaje');
@@ -181,18 +308,16 @@ export class HomePage  {
 
   
   activatePinE(){
-    this.http.get(`http://localhost:8000/apagar/${this.identificadorTorniquete[1]}` ).subscribe(
+    this.http.get(`http://localhost:8000/apagar/${this.pin_input}` ).subscribe(
       success=>{
-        console.log("success_OFF_pin",success)
       },error=>{
         console.error("error_OFF_pin",error)
       }
     )
 
     setTimeout(() => {
-      this.http.get(`http://localhost:8000/encender/${this.identificadorTorniquete[1]}`).subscribe(
+      this.http.get(`http://localhost:8000/encender/${this.pin_input}`).subscribe(
         success=>{
-          console.log("success_ON_pin",success)
         },error=>{
           console.error("error_ON_pin",error)
         }
@@ -201,18 +326,16 @@ export class HomePage  {
   }
 
   activatePinS(){
-    this.http.get(`http://localhost:8000/apagar/${this.identificadorTorniquete[2]}` ).subscribe(
+    this.http.get(`http://localhost:8000/apagar/${this.pin_output}` ).subscribe(
       success=>{
-        console.log("success_OFF_pin",success)
       },error=>{
         console.error("error_OFF_pin",error)
       }
     )
 
     setTimeout(() => {
-      this.http.get(`http://localhost:8000/encender/${this.identificadorTorniquete[2]}`).subscribe(
+      this.http.get(`http://localhost:8000/encender/${this.pin_output}`).subscribe(
         success=>{
-          console.log("success_ON_pin",success)
         },error=>{
           console.error("error_ON_pin",error)
         }
