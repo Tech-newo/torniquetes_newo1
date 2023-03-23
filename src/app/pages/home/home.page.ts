@@ -11,6 +11,8 @@ import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
 import { LoginPage } from '../login/login.page';
+import { fromEvent, merge, Observable } from 'rxjs';
+import { mapTo } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -29,6 +31,8 @@ export class HomePage  {
   lastId:any = undefined
   newId:any = undefined
   codeSend:any
+  pendingRequests: any[] = [];
+
   constructor(
     public navController: NavController,
     public sedesService: SedesService,
@@ -41,11 +45,11 @@ export class HomePage  {
   ) { }
 
   ionViewDidEnter() {
-
+    //Subscripcion al estado de la conexion a internet
+    this.listenOnlineStatus();
     (document.getElementById('qrCodeInput'))
       ? document.getElementById('qrCodeInput').focus()
       : null;
-  
   }
 
   keypress(event){
@@ -80,13 +84,19 @@ export class HomePage  {
     if(code.typeUser === '1'){
       this.validateMember(code.idUser)
     }else{
-      if(await this.validateTimeInvitation(code.idUser)){
+      if(navigator.onLine){
+        if(await this.validateTimeInvitation(code.idUser)){
+          this.valueDonut(100)
+          this.successDonut(Number(this.codeSend.typeRegister));
+          this.sendWebHook()
+        }else{
+          this.loadDonutError(true)
+          this.mensaje = "Código QR ha expirado, genera uno nuevo"
+        }
+      }else{
         this.valueDonut(100)
         this.successDonut(Number(this.codeSend.typeRegister));
         this.sendWebHook()
-      }else{
-        this.loadDonutError(true)
-        this.mensaje = "Código QR ha expirado, genera uno nuevo"
       }
     }
   }
@@ -103,14 +113,6 @@ export class HomePage  {
       const diffTime = (now.getTime() - time.getTime())
       const diffMins = Math.floor(((diffTime % 86400000) % 3600000) / 60000);
 
-
-      console.log(`fechaActual: ${fechaActual}`)
-      console.log(`fechaFin ${fechaFin}`)
-      console.log(`time ${time}`)
-      console.log(`now ${now}`)
-      console.log(`diffTime ${diffTime}`)
-      console.log(`diffMins ${diffMins}`)
-      console.log(`diferenciaEnMilisegundos ${diferenciaEnMilisegundos}`)
       this.successDonut(Number(this.codeSend.typeRegister));
       this.sendWebHook()
     }
@@ -142,69 +144,67 @@ export class HomePage  {
     return resultado;
   }
 
-  sendWebHook(){
-    this.http.post('https://hook.us1.make.com/wgwqni29wgvpnfp1kukqc3qxg8sugiy1', this.codeSend, {responseType: 'text'}).subscribe(
-      (response) => {
-      },
-      (error) => {
-        console.error('Error en la petición:', error);
+  sendWebHook() {
+    if (navigator.onLine) {
+      // Si hay conexión a Internet, realiza la petición normalmente
+      this.http.post('https://hook.us1.make.com/wgwqni29wgvpnfp1kukqc3qxg8sugiy1', this.codeSend, {responseType: 'text'}).subscribe(
+        (response) => {
+        },
+        (error) => {
+          console.error('Error en la petición:', error);
+        }
+      );
+    } else {
+      // Si no hay conexión a Internet, agrega la petición pendiente a la variable
+      // 'pendingRequests'
+      this.pendingRequests.push(this.codeSend);
+    }
+  }
+
+  
+  checkOnlineStatus(): Observable<boolean> {
+    const online$ = fromEvent(window, 'online').pipe(mapTo(true));
+    const offline$ = fromEvent(window, 'offline').pipe(mapTo(false));
+    return merge(online$, offline$);
+  }
+  
+  listenOnlineStatus() {
+    this.checkOnlineStatus().subscribe((status) => {
+      if (status) {
+        // Si se restablece la conexión a Internet, envía las peticiones pendientes
+        this.sendPendingRequests();
       }
-    );
+    });
   }
+  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  resetAll(){
-    localStorage.setItem('sede','')
-    localStorage.setItem('pin_out','')
-    localStorage.setItem('pin_out','')
-    this.navController.navigateRoot('/')
+  sendPendingRequests() {
+      if (navigator.onLine && this.pendingRequests.length > 0) {
+      // Si hay conexión a Internet y hay peticiones pendientes, envía las peticiones
+      // y vacía la variable 'pendingRequests'
+      const requests = this.pendingRequests.splice(0, this.pendingRequests.length);
+      for (const request of requests) {
+        this.http.post('https://hook.us1.make.com/wgwqni29wgvpnfp1kukqc3qxg8sugiy1', request, {responseType: 'text'}).subscribe(
+          (response) => {
+          },
+          (error) => {
+            console.error('Error en la petición:', error);
+          }
+        );
+      }
+    }
   }
+  
+
+  
 
 
 
 
 
-  autofocus(){
-    setTimeout(() => {
-      document.getElementById('code').focus();
-    }, 500);
 
-    setTimeout(() => {
-      document.getElementById('qrCodeInput').focus()
-    }, 1000);
-  }
+
+
 
 
 
@@ -233,6 +233,25 @@ export class HomePage  {
 
 
   /* Controladores de vista */
+
+  
+  resetAll(){
+    localStorage.setItem('sede','')
+    localStorage.setItem('pin_out','')
+    localStorage.setItem('pin_out','')
+    this.navController.navigateRoot('/')
+  }
+
+  autofocus(){
+    setTimeout(() => {
+      document.getElementById('code').focus();
+    }, 500);
+
+    setTimeout(() => {
+      document.getElementById('qrCodeInput').focus()
+    }, 1000);
+  }
+
 
   loadDonutError(status: boolean) {
     let rootElement = document.documentElement;
