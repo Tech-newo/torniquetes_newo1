@@ -29,6 +29,8 @@ export class HomePage  {
   lastId:any = undefined
   newId:any = undefined
   codeSend:any
+  webHook:any = "https://hook.us1.make.com/rcykioyv34gtxyeeas4xf6jlcgs4q4tm"
+
   constructor(
     public navController: NavController,
     public sedesService: SedesService,
@@ -143,7 +145,7 @@ export class HomePage  {
   }
 
   sendWebHook(){
-    this.http.post('https://hook.us1.make.com/y9u1ykoqw8hocogunfuus3v0hjystcgi', this.codeSend, {responseType: 'text'}).subscribe(
+    this.http.post(this.webHook, this.codeSend, {responseType: 'text'}).subscribe(
       (response) => {
       },
       (error) => {
