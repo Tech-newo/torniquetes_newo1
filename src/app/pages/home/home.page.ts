@@ -21,15 +21,16 @@ export class HomePage  {
   account: Account;
   codigoQR: any = ''
   identificadorTorniquete: any = localStorage.getItem('sede')
-  pin_input: any = localStorage.getItem('pin_out')
+  pin_input: any = localStorage.getItem('pin_input')
   pin_output: any = localStorage.getItem('pin_out')
+  sedeLogin: any = localStorage.getItem('sede')
   sedeTorniquete: any = []
   mensaje: any = "Escanea tu QR en el lector"
   img: any = ""
   lastId:any = undefined
   newId:any = undefined
   codeSend:any
-  webHook:any = "https://hook.us1.make.com/rcykioyv34gtxyeeas4xf6jlcgs4q4tm"
+  webHook:any = "https://hook.us1.make.com/hnsg8quugqfed73zgrxigild2afbocwj"
 
   constructor(
     public navController: NavController,
@@ -43,11 +44,25 @@ export class HomePage  {
   ) { }
 
   ionViewDidEnter() {
-
     (document.getElementById('qrCodeInput'))
       ? document.getElementById('qrCodeInput').focus()
       : null;
-  
+    this.loadSede()
+    console.log("this.pin_input",this.pin_input)
+    console.log("this.pin_output",this.pin_output)
+    console.log("this.sedeLogin",this.sedeLogin)
+    
+  }
+
+  loadSede(){
+    this.sedesService.query({
+      'id.equals': this.sedeLogin
+    }).subscribe(
+      succes=>{
+        this.sedeLogin = succes.body[0].nombreSede
+        console.log(this.sedeLogin)
+      }
+    )
   }
 
   keypress(event){
@@ -85,7 +100,7 @@ export class HomePage  {
       if(await this.validateTimeInvitation(code.idUser)){
         this.valueDonut(100)
         this.successDonut(Number(this.codeSend.typeRegister));
-        this.sendWebHook()
+        // this.sendWebHook()
       }else{
         this.loadDonutError(true)
         this.mensaje = "Código QR ha expirado, genera uno nuevo"
@@ -96,25 +111,23 @@ export class HomePage  {
     validateMember(id:any){
       this.mensaje = 'Validando miembro.'
       this.valueDonut(100)
-      const fechaFin = new Date().toISOString();
       const fechaActual = this.codeSend.dateInvitation;
-      const diferenciaEnMilisegundos = new Date(fechaActual).getTime() - new Date(fechaFin).getTime();
 
-      const time = new Date(this.codeSend.dateInvitation)
+      const time = new Date(Number(this.codeSend.dateInvitation))
       const now = new Date()
-      const diffTime = (now.getTime() - time.getTime())
-      const diffMins = Math.floor(((diffTime % 86400000) % 3600000) / 60000);
-
+      const tiempoDiferencia = (now.getTime() - time.getTime())
+      const diferenciaMinutos = Math.floor(((tiempoDiferencia % 86400000) % 3600000) / 60000);
 
       console.log(`fechaActual: ${fechaActual}`)
-      console.log(`fechaFin ${fechaFin}`)
-      console.log(`time ${time}`)
       console.log(`now ${now}`)
-      console.log(`diffTime ${diffTime}`)
-      console.log(`diffMins ${diffMins}`)
-      console.log(`diferenciaEnMilisegundos ${diferenciaEnMilisegundos}`)
-      this.successDonut(Number(this.codeSend.typeRegister));
-      this.sendWebHook()
+      console.log(`diferenciaMinutos ${diferenciaMinutos}`)
+      if(diferenciaMinutos > 10){
+        this.mensaje = 'Código QR ha expirado, genera uno nuevo.'
+        this.loadDonutError(true)
+      }else{
+        this.successDonut(Number(this.codeSend.typeRegister));
+      }
+      // this.sendWebHook()
     }
 
   async validateTimeInvitation(id: any): Promise<boolean> {
@@ -272,14 +285,14 @@ export class HomePage  {
 
   successDonut(estadoQR:number) {
     if(estadoQR == 0){
-      this.mensaje = "Saliendo"
+      this.mensaje = "¡Hasta pronto!"
       this.activatePinE()
       this.img = "assets/img/donut-step-5.png"
       setTimeout(() => {
         this.resetDonut()
       }, 3000);
     }else{
-      this.mensaje = "Entrando"
+      this.mensaje = `¡Bienvenido a Newo ${this.sedeLogin}!`
       this.activatePinS()
       this.img = "assets/img/donut-step-5.png"
       setTimeout(() => {

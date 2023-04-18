@@ -102,7 +102,7 @@ export class LoginPage implements OnInit {
       this.alerts('Debes seleccionar pines diferentes.')
     } else {
         localStorage.setItem('sede',LoginPage.SEDE)
-        localStorage.setItem('pin_out',LoginPage.PIN_INPUT)
+        localStorage.setItem('pin_input',LoginPage.PIN_INPUT)
         localStorage.setItem('pin_out',LoginPage.PIN_OUTPUT)
         this.statusLogin = true
         // this.navController.navigateRoot('/tabs')
