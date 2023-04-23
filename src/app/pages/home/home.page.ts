@@ -100,7 +100,7 @@ export class HomePage  {
       if(await this.validateTimeInvitation(code.idUser)){
         this.valueDonut(100)
         this.successDonut(Number(this.codeSend.typeRegister));
-        // this.sendWebHook()
+        this.sendWebHook()
       }else{
         this.loadDonutError(true)
         this.mensaje = "Código QR ha expirado, genera uno nuevo"
@@ -127,7 +127,7 @@ export class HomePage  {
       }else{
         this.successDonut(Number(this.codeSend.typeRegister));
       }
-      // this.sendWebHook()
+      this.sendWebHook()
     }
 
   async validateTimeInvitation(id: any): Promise<boolean> {
