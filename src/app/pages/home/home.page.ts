@@ -61,8 +61,7 @@ export class HomePage {
     private storageIonicServer: StorageIonicServer,
     private loadingController:LoadingController
   ) {
-    this.selfManageHistory()
-    // this.clearStorage()
+    this.clearStorage()
   }
 
   async presentLoading() {
@@ -72,148 +71,182 @@ export class HomePage {
     await this.loading.present();
   }
 
-  async selfManageHistory(){
-    const registrosTodayMiembros = await this.getRecordsOfDayMiembros()
-    const getRecordsOfDayInvitados = await this.getRecordsOfDayInvitados()
-    const date = new Date().toLocaleDateString("es-ES");
-    if(registrosTodayMiembros){
-      const valor = await this.storageIonicServer.getItem(`${date}-MIEMBROS`);
-      this.recordsStorageMiembros = valor;
-      console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
-      this.getAllItemsStorage()
-      // this.clearStorage()
-    }else{
-      this.presentLoading()
-      const queryRecordsOfDayMiembros = await this.queryRecordsOfDayMiembros();
-      const saveRecordsOfDayMiembros = await this.saveRecordsOfDayMiembros(queryRecordsOfDayMiembros);
-      this.saveStorage(`${date}-MIEMBROS`,saveRecordsOfDayMiembros)
-      console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
-      this.loading.dismiss()
-    }
+  // async selfManageHistory(){
+  //   const registrosTodayMiembros = await this.getRecordsOfDayMiembros()
+  //   const getRecordsOfDayInvitados = await this.getRecordsOfDayInvitados()
+  //   const date = new Date().toLocaleDateString("es-ES");
+  //   if(registrosTodayMiembros){
+  //     const valor = await this.storageIonicServer.getItem(`${date}-MIEMBROS`);
+  //     this.recordsStorageMiembros = valor;
+  //     console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
+  //     this.getAllItemsStorage()
+  //     // this.clearStorage()
+  //   }else{
+  //     this.presentLoading()
+  //     const queryRecordsOfDayMiembros = await this.queryRecordsOfDayMiembros();
+  //     const saveRecordsOfDayMiembros = await this.saveRecordsOfDayMiembros(queryRecordsOfDayMiembros);
+  //     this.saveStorage(`${date}-MIEMBROS`,saveRecordsOfDayMiembros)
+  //     console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
+  //     this.loading.dismiss()
+  //   }
 
-    if(getRecordsOfDayInvitados){
-      this.getAllItemsStorage()
-      const valor = await this.storageIonicServer.getItem(`${date}-INVITADOS`);
-      this.recordsStorageInvitados = valor;
-      console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
-    }else{
-      this.presentLoading()
-      const queryRecordsOfDayOnvitados = await this.queryRecordsOfDayOnvitados();
-      const saveRecordsOfDayInvitados = await this.saveRecordsOfDayInvitados(queryRecordsOfDayOnvitados);
-      const date = new Date().toLocaleDateString("es-ES");
-      this.saveStorage(`${date}-INVITADOS`,saveRecordsOfDayInvitados)
-      console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
-      this.loading.dismiss()
-    }
-  }
+  //   if(getRecordsOfDayInvitados){
+  //     this.getAllItemsStorage()
+  //     const valor = await this.storageIonicServer.getItem(`${date}-INVITADOS`);
+  //     this.recordsStorageInvitados = valor;
+  //     console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
+  //   }else{
+  //     this.presentLoading()
+  //     const queryRecordsOfDayOnvitados = await this.queryRecordsOfDayOnvitados();
+  //     const saveRecordsOfDayInvitados = await this.saveRecordsOfDayInvitados(queryRecordsOfDayOnvitados);
+  //     const date = new Date().toLocaleDateString("es-ES");
+  //     this.saveStorage(`${date}-INVITADOS`,saveRecordsOfDayInvitados)
+  //     console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
+  //     this.loading.dismiss()
+  //   }
+  // }
 
-  async getRecordsOfDayMiembros(){
-    const date = new Date().toLocaleDateString("es-ES");
-    const fechas  = await this.storageIonicServer.getAllKeys();
-    const storageMiembros = fechas.filter(fecha => fecha.includes(`${date}-MIEMBROS`));
-    let registerToday = false;
-    if(storageMiembros.length > 0){
-      registerToday = true;
-    }else{
-      registerToday = false;
-    }
-    return registerToday;
-  }
+  // async getRecordsOfDayMiembros(){
+  //   const date = new Date().toLocaleDateString("es-ES");
+  //   const fechas  = await this.storageIonicServer.getAllKeys();
+  //   const storageMiembros = fechas.filter(fecha => fecha.includes(`${date}-MIEMBROS`));
+  //   let registerToday = false;
+  //   if(storageMiembros.length > 0){
+  //     registerToday = true;
+  //   }else{
+  //     registerToday = false;
+  //   }
+  //   return registerToday;
+  // }
 
-  async getRecordsOfDayInvitados(){
-    const date = new Date().toLocaleDateString("es-ES");
-    const fechas  = await this.storageIonicServer.getAllKeys();
-    const storageInvitados = fechas.filter(fecha => fecha.includes(`${date}-INVITADOS`));
-    let registerToday = false;
-    if(storageInvitados.length > 0){
-      registerToday = true;
-    }else{
-      registerToday = false;
-    }
-    return registerToday;
-  }
+  // async getRecordsOfDayInvitados(){
+  //   const date = new Date().toLocaleDateString("es-ES");
+  //   const fechas  = await this.storageIonicServer.getAllKeys();
+  //   const storageInvitados = fechas.filter(fecha => fecha.includes(`${date}-INVITADOS`));
+  //   let registerToday = false;
+  //   if(storageInvitados.length > 0){
+  //     registerToday = true;
+  //   }else{
+  //     registerToday = false;
+  //   }
+  //   return registerToday;
+  // }
 
-  async saveRecordsOfDayMiembros(records) {
+  // async saveRecordsOfDayMiembros(records) {
 
-    await Promise.all(records.map(async (element) => {
-      let typeRecord 
-      element.salida ? typeRecord = 0 : typeRecord = 1;
-      const dateRegister = element.registroFecha
-      const miembro = await this.getMiembro(element.user.id);
-      const arr = `${typeRecord},1,${miembro[0].id},v2,${typeRecord},${element.registroFecha},${dateRegister}`;
-      this.recordsStorageMiembros.push(arr);
-    }));
+  //   await Promise.all(records.map(async (element) => {
+  //     let typeRecord 
+  //     element.salida ? typeRecord = 0 : typeRecord = 1;
+  //     const dateRegister = element.registroFecha
+  //     const miembro = await this.getMiembro(element.user.id);
+  //     const arr = `${typeRecord},1,${miembro[0].id},v2,${typeRecord},${element.registroFecha},${dateRegister}`;
+  //     this.recordsStorageMiembros.push(arr);
+  //   }));
 
-    return this.recordsStorageMiembros;
-  }
+  //   return this.recordsStorageMiembros;
+  // }
 
-  async saveRecordsOfDayInvitados(records) {
-    await Promise.all(records.map(async (element) => {
-      let typeRecord 
-      element.salida ? typeRecord = 0 : typeRecord = 1;
-      const dateRegister = element.registroFecha
-      if (element.invitado !== null) {
-        const invitacion:any = await this.getInvitacion(element.invitado.id);
-        invitacion.forEach(element => {
-          const arr = `${typeRecord},2,${element.id},${element.fechaFin},${dateRegister}`;
-          this.recordsStorageInvitados.push(arr);
-        });
-      } else {
-        // handle the case where myObject is null
-      }
+  // async saveRecordsOfDayInvitados(records) {
+  //   await Promise.all(records.map(async (element) => {
+  //     let typeRecord 
+  //     element.salida ? typeRecord = 0 : typeRecord = 1;
+  //     const dateRegister = element.registroFecha
+  //     if (element.invitado !== null) {
+  //       const invitacion:any = await this.getInvitacion(element.invitado.id);
+  //       invitacion.forEach(element => {
+  //         const arr = `${typeRecord},2,${element.id},${element.fechaFin},${dateRegister}`;
+  //         this.recordsStorageInvitados.push(arr);
+  //       });
+  //     } else {
+  //       // handle the case where myObject is null
+  //     }
       
    
-    }));
+  //   }));
 
-    return this.recordsStorageInvitados;
-  }
+  //   return this.recordsStorageInvitados;
+  // }
 
 
-  async queryRecordsOfDayMiembros() {
-    return new Promise((resolve, reject) => {
-      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-      const fechaManana = moment(fechaHoy).add(1, 'day').toDate(); // Fecha de inicio del día siguiente en la hora local
-      this.entradaMiembrosService.query({
-        'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
-        'registroFecha.lessThan': fechaManana.toISOString(),
-        'size': 999999,
-        'sort': ['registroFecha,asc'],
-        'sedeId.equals': localStorage.getItem('sede')
-      }).subscribe(
-        success => {
-          resolve(success.body);
-        }, error => {
-          reject(error);
-        }
-      )
-    });
-  }
+  // async queryRecordsOfDayMiembros() {
+  //   return new Promise((resolve, reject) => {
+  //     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
+  //     const fechaManana = moment(fechaHoy).add(1, 'day').toDate(); // Fecha de inicio del día siguiente en la hora local
+  //     this.entradaMiembrosService.query({
+  //       'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+  //       'registroFecha.lessThan': fechaManana.toISOString(),
+  //       'size': 999999,
+  //       'sort': ['registroFecha,asc'],
+  //       'sedeId.equals': localStorage.getItem('sede')
+  //     }).subscribe(
+  //       success => {
+  //         resolve(success.body);
+  //       }, error => {
+  //         reject(error);
+  //       }
+  //     )
+  //   });
+  // }
 
-  async queryRecordsOfDayOnvitados() {
-    return new Promise((resolve, reject) => {
-      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-      const fechaManana = moment(fechaHoy).add(1, 'day').toDate(); // Fecha de inicio del día siguiente en la hora local
-      this.entradaInvitadosService.query({
-        'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
-        'registroFecha.lessThan': fechaManana.toISOString(),
-        'size': 999999,
-        'sort': ['registroFecha,asc'],
-        'sedeId.equals': localStorage.getItem('sede')
-      }).subscribe(
-        success => {
-          resolve(success.body);
-        }, error => {
-          reject(error);
-        }
-      )
-    });
-  }
+  // async queryRecordsOfDayOnvitados() {
+  //   return new Promise((resolve, reject) => {
+  //     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
+  //     const fechaManana = moment(fechaHoy).add(1, 'day').toDate(); // Fecha de inicio del día siguiente en la hora local
+  //     this.entradaInvitadosService.query({
+  //       'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+  //       'registroFecha.lessThan': fechaManana.toISOString(),
+  //       'size': 999999,
+  //       'sort': ['registroFecha,asc'],
+  //       'sedeId.equals': localStorage.getItem('sede')
+  //     }).subscribe(
+  //       success => {
+  //         resolve(success.body);
+  //       }, error => {
+  //         reject(error);
+  //       }
+  //     )
+  //   });
+  // }
 
   async getMiembro(userId) {
     return new Promise((resolve, reject) => {
-      this.miembrosService.query({'userId.equals': userId}).subscribe(
+      this.miembrosService.query({'id.equals': userId}).subscribe(
         success => {
           resolve(success.body);
+        },
+        error => {
+          reject(error);
+        }
+      );
+    });
+  }
+
+  async getUltimaEntradaMiembro(userId) {
+    return new Promise((resolve, reject) => {
+      this.entradaMiembrosService.query({
+        'userId.equals': userId,
+        'sort': ['registroFecha,desc'],
+        'size': 1
+      }).subscribe(
+        success => {
+          resolve(success.body[0]);
+        },
+        error => {
+          reject(error);
+        }
+      );
+    });
+  }
+
+  async getUltimaEntradaInvitado(invitadoId) {
+    return new Promise((resolve, reject) => {
+      this.entradaInvitadosService.query({
+        'invitadoId.equals': invitadoId,
+        'sort': ['registroFecha,desc'],
+        'size': 1
+      }).subscribe(
+        success => {
+          resolve(success.body[0]);
         },
         error => {
           reject(error);
@@ -321,16 +354,18 @@ export class HomePage {
   }
 
   async controller(code: any) {
+    document.getElementById('code').focus();
     if (code.typeUser === '1') {
-      this.validateMember(code.idUser,code)
+      this.validateMember(code)
     } else {
-      if (await this.validateTimeInvitation(code.idUser)) {
+      const valTimeInv = await this.validateTimeInvitation(code.idUser,code);
+      console.log('valTimeInv',valTimeInv)
+      if (await this.validateTimeInvitation(code.idUser,code)) {
         this.valueDonut(100)
         this.successDonut(Number(this.codeSend.typeRegister));
         this.sendWebHook()
       } else {
         this.loadDonutError(true)
-        this.mensaje = "Código QR ha expirado, genera uno nuevo"
       }
     }
   }
@@ -352,37 +387,37 @@ export class HomePage {
 
 
   
-  validateMember(id: any,code) {
-    const arr = `${code.typeRegister},1,${code.idUser},v2,${code.typeRegister},${code.dateRegister},${code.dateRegister}`;
-    console.log("code.idUser",code.idUser)
-
-    console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
-
-    const registrosFiltrados = this.recordsStorageMiembros.filter(registro => {
-      const campos = registro.split(",");
-      return campos[2] === code.idUser;
-    });
+  async validateMember(code) {
     let sinSalida = false;
     let sinEntrada = false;
-    const ultimoRegistro = registrosFiltrados.pop();
-    console.log('ultimoRegistro[0]',ultimoRegistro[0])
-    console.log('sinSalida[0]',sinSalida)
-    console.log('code.typeRegister',code.typeRegister)
-    code.typeRegister == 0 && ultimoRegistro[0] == 0 ? sinSalida = true : null;
-    code.typeRegister == 1 && ultimoRegistro[0] == 1 ? sinEntrada = true : null;
-
-    // this.recordsStorageMiembros.push(arr)
     this.mensaje = 'Validando miembro.'
-    this.valueDonut(100)
-    const fechaActual = this.codeSend.dateInvitation;
+    this.valueDonut(50)
+    const getMiembro = await this.getMiembro(code.idUser);
+    const getUltimaEntradaMiembro:any = await this.getUltimaEntradaMiembro(getMiembro[0].user.id);
+    //ENTRADA
+    if(getUltimaEntradaMiembro != undefined){
+      if(code.typeRegister == 0){
+        if(!getUltimaEntradaMiembro.salida){
+          sinSalida = true;
+        }
+      }
+      //SALIDA
+      else if(code.typeRegister == 1){
+        if(getUltimaEntradaMiembro.salida){
+          sinEntrada = true;
+        }
+      }
+    }else{
+      if(code.typeRegister == 1){
+          sinEntrada = true;
+      }
+    }
 
+    this.valueDonut(100)
     const time = new Date(Number(this.codeSend.dateInvitation))
     const now = new Date()
     const tiempoDiferencia = (now.getTime() - time.getTime())
     const diferenciaMinutos = Math.floor(((tiempoDiferencia % 86400000) % 3600000) / 60000);
-
-    console.log(`fechaActual: ${fechaActual}`)
-    console.log(`now ${now}`)
     console.log(`diferenciaMinutos ${diferenciaMinutos}`)
     if (diferenciaMinutos > 10) {
       this.mensaje = 'Código QR ha expirado, genera uno nuevo.'
@@ -394,7 +429,6 @@ export class HomePage {
       this.mensaje = 'No cuentas con registros de entrada.'
       this.loadDonutError(true)
     } else {
-      this.recordsStorageMiembros.push(arr)
       this.successDonut(Number(this.codeSend.typeRegister));
       this.sendWebHook()
     }
@@ -408,14 +442,17 @@ export class HomePage {
 
 
 
-  async validateTimeInvitation(id: any): Promise<boolean> {
+  async validateTimeInvitation(id: any,code:any): Promise<boolean> {
     let resultado = false;
     this.mensaje = 'Validando invitado.';
     this.valueDonut(50);
     try {
       const success = await this.invitacionService.findById(id).toPromise();
+      const invitadoId = success.body[0].invitado.id;
       const fechaFin = success.body[0].fechaFin;
       const fechaActual = new Date().toISOString();
+      let sinSalida = false;
+      let sinEntrada = false;
       if (fechaFin > fechaActual) {
         this.valueDonut(75);
         const miembroSuccess = await this.miembrosService.query({
@@ -423,10 +460,51 @@ export class HomePage {
         }).toPromise();
         const ingresoSedes = miembroSuccess.body[0].nivel.ingresoSedes
         const userActivated = miembroSuccess.body[0].user.activated;
-        (ingresoSedes && userActivated)
-          ? resultado = true
-          : resultado = false
+        if(ingresoSedes && userActivated){
+
+
+          const ultimoRegistroInvitado:any = await this.getUltimaEntradaInvitado(invitadoId);
+          console.log("ultimoRegistroInvitado",ultimoRegistroInvitado)
+          if(ultimoRegistroInvitado != undefined){
+            //ENTRADA
+            if(code.typeRegister == 0){
+              if(!ultimoRegistroInvitado.salida){
+                resultado = false
+                sinSalida = true;
+                this.mensaje = 'Tienes un registro de entrada sin finalizar.'
+              }else{
+                resultado = true
+              }
+            }
+            //SALIDA
+            else if(code.typeRegister == 1){
+              if(ultimoRegistroInvitado.salida){
+                sinEntrada = true;
+                resultado = false
+                this.mensaje = 'No cuentas con registros de entrada.'
+              }else{
+                resultado = true
+              }
+            }else{
+              resultado = false
+              this.mensaje = 'Vuelve a escanear el codigo, si el problema persiste genera uno nuevo.'
+            }
+          }else{
+            if(code.typeRegister == 1){
+              sinEntrada = true;
+              resultado = false
+              this.mensaje = 'No cuentas con registros de entrada.'
+            }else{
+              resultado = true
+            }
+          }
+        }else{
+        this.mensaje = "Quien te invito no cuenta con los permisos necesarios."
+        resultado = false
+        }
+          
       } else {
+        this.mensaje = "Código QR ha expirado, genera uno nuevo"
         resultado = false;
       }
     } catch (error) {
@@ -496,7 +574,7 @@ export class HomePage {
 
     setTimeout(() => {
       document.getElementById('qrCodeInput').focus()
-    }, 1000);
+    }, 2000);
   }
 
 
