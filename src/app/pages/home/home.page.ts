@@ -61,7 +61,13 @@ export class HomePage {
     private storageIonicServer: StorageIonicServer,
     private loadingController:LoadingController
   ) {
-    this.clearStorage()
+
+    this.loadHistoryStorage()
+    // this.clearStorage()
+  }
+  async loadHistoryStorage(){
+    const itemsStorage = await this.storageIonicServer.getAllItems()
+    console.log("itemsStorage==>",itemsStorage)
   }
 
   async presentLoading() {
@@ -222,13 +228,17 @@ export class HomePage {
   }
 
   async getUltimaEntradaMiembro(userId) {
+    const fechaHoy = moment().utcOffset(-5).add(5, 'hours').startOf('day').toDate(); // Fecha de inicio del día en la hora local
+    console.log('fechaHoy.toISOString---->',fechaHoy.toISOString())
     return new Promise((resolve, reject) => {
       this.entradaMiembrosService.query({
         'userId.equals': userId,
-        'sort': ['registroFecha,desc'],
-        'size': 1
+        'size': 1,
+        'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+        'sort': ['registroFecha,desc']
       }).subscribe(
         success => {
+          console.log("entradaMiembrosService",success.body[0])
           resolve(success.body[0]);
         },
         error => {
@@ -239,11 +249,14 @@ export class HomePage {
   }
 
   async getUltimaEntradaInvitado(invitadoId) {
+    const fechaHoy = moment().utcOffset(-5).add(5, 'hours').startOf('day').toDate(); // Fecha de inicio del día en la hora local
+
     return new Promise((resolve, reject) => {
       this.entradaInvitadosService.query({
         'invitadoId.equals': invitadoId,
-        'sort': ['registroFecha,desc'],
-        'size': 1
+        'size': 1,
+        'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+        'sort': ['registroFecha,desc']
       }).subscribe(
         success => {
           resolve(success.body[0]);
@@ -327,6 +340,8 @@ export class HomePage {
   keypress(event) {
     if (event.key == "Enter") {
       const code = this.codigoQR.split(',')
+      console.log("code---->",code)
+      console.log("code---->",code.length)
       const codeReset = code[0] + code[1] + code[2]
       codeReset === '666' ? this.resetAll() : null;
       this.codeSend = {}
@@ -336,7 +351,7 @@ export class HomePage {
       this.codeSend.sede = localStorage.getItem('sede') //sede
       this.codeSend.dateRegister = new Date().toISOString() //fecha registro
       this.codeSend.dateInvitation = code[5];
-      (this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1')
+      ((this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1') && (code.length === 6 || code.length === 5))
         ? this.processCode(this.codeSend)
         : this.resetDonut()
     }
@@ -361,8 +376,7 @@ export class HomePage {
       const valTimeInv = await this.validateTimeInvitation(code.idUser,code);
       console.log('valTimeInv',valTimeInv)
       if (await this.validateTimeInvitation(code.idUser,code)) {
-        this.valueDonut(100)
-        this.successDonut(Number(this.codeSend.typeRegister));
+        this.valueDonut(50)
         this.sendWebHook()
       } else {
         this.loadDonutError(true)
@@ -413,7 +427,6 @@ export class HomePage {
       }
     }
 
-    this.valueDonut(100)
     const time = new Date(Number(this.codeSend.dateInvitation))
     const now = new Date()
     const tiempoDiferencia = (now.getTime() - time.getTime())
@@ -429,7 +442,6 @@ export class HomePage {
       this.mensaje = 'No cuentas con registros de entrada.'
       this.loadDonutError(true)
     } else {
-      this.successDonut(Number(this.codeSend.typeRegister));
       this.sendWebHook()
     }
   }
@@ -454,7 +466,6 @@ export class HomePage {
       let sinSalida = false;
       let sinEntrada = false;
       if (fechaFin > fechaActual) {
-        this.valueDonut(75);
         const miembroSuccess = await this.miembrosService.query({
           'userId.equals': success.body[0].invitado.user.id
         }).toPromise();
@@ -513,9 +524,25 @@ export class HomePage {
     return resultado;
   }
 
-  sendWebHook() {
+  async sendWebHook() {
+    // https://us1.make.com/30786/scenarios/868157/logs/6bacb8bfa8db4134990371df8ae2937e?showCheckRuns=true
     this.http.post(this.webHook, this.codeSend, { responseType: 'text' }).subscribe(
-      (response) => {
+      async (response) => {
+        if(response != 'Accepted'){
+          const responseJson = JSON.parse(response)
+          console.log('responseJson',responseJson)
+          if(responseJson.status === 'ok'){
+            
+            this.successDonut(Number(this.codeSend.typeRegister),responseJson);
+
+          }else{
+            this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.'
+            this.loadDonutError(true)
+          }
+        }else{
+          this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.'
+          this.loadDonutError(true)
+        }
       },
       (error) => {
         console.error('Error en la petición:', error);
@@ -608,7 +635,7 @@ export class HomePage {
   loadDonutError(status: boolean) {
     let rootElement = document.documentElement;
     rootElement.style.setProperty("--donut-value-medicion", '0');
-    setTimeout(function () {
+    setTimeout( ()=> {
       let donut = document.getElementById('donut');
       let qrimg = document.getElementById('qr-img');
       let error = document.getElementById('error');
@@ -639,23 +666,30 @@ export class HomePage {
     }, 200);
   }
 
-  successDonut(estadoQR: number) {
+  async successDonut(estadoQR: number,responseJson) {
+    this.valueDonut(70)
+    setTimeout(() => {
+      this.valueDonut(100)
+    }, 2000);
+    const fechaActual = moment().toDate();
     if (estadoQR == 0) {
       this.mensaje = `¡Bienvenido a Newo ${this.sedeLogin}!`
+      await this.storageIonicServer.setItem(`{"id":${this.codeSend.idUser},"type":"entrada","fecha": ${fechaActual}}`,JSON.stringify(responseJson))
       this.activatePinE()
       this.img = "assets/img/donut-step-5.png"
       setTimeout(() => {
-        this.resetDonut()
+      this.resetDonut()
       }, 3000);
     } else {
       this.mensaje = "¡Hasta pronto!"
+      await this.storageIonicServer.setItem(`{"id":${this.codeSend.idUser},"type":"salida","fecha": ${fechaActual}}`,JSON.stringify(responseJson))
       this.activatePinS()
       this.img = "assets/img/donut-step-5.png"
       setTimeout(() => {
-        this.resetDonut()
+      this.resetDonut()
       }, 3000);
     }
-
+    this.loadHistoryStorage()
   }
 
 
