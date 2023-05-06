@@ -689,7 +689,6 @@ export class HomePage {
       this.resetDonut()
       }, 3000);
     }
-    this.loadHistoryStorage()
   }
 
 
