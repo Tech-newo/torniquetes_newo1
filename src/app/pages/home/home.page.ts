@@ -61,7 +61,8 @@ export class HomePage {
     private storageIonicServer: StorageIonicServer,
     private loadingController:LoadingController
   ) {
-
+    const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
+    console.log('fechaHoy--->',fechaHoy)
     this.loadHistoryStorage()
     // this.clearStorage()
   }
@@ -228,7 +229,7 @@ export class HomePage {
   }
 
   async getUltimaEntradaMiembro(userId) {
-    const fechaHoy = moment().utcOffset(-5).add(5, 'hours').startOf('day').toDate(); // Fecha de inicio del día en la hora local
+    const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
     console.log('fechaHoy.toISOString---->',fechaHoy.toISOString())
     return new Promise((resolve, reject) => {
       this.entradaMiembrosService.query({
@@ -249,7 +250,7 @@ export class HomePage {
   }
 
   async getUltimaEntradaInvitado(invitadoId) {
-    const fechaHoy = moment().utcOffset(-5).add(5, 'hours').startOf('day').toDate(); // Fecha de inicio del día en la hora local
+    const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
 
     return new Promise((resolve, reject) => {
       this.entradaInvitadosService.query({
