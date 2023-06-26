@@ -14,7 +14,11 @@ import { LoginPage } from '../login/login.page';
 import { Storage } from '@ionic/storage-angular';
 import { StorageIonicServer } from 'src/app/services/storage/storage.service';
 import * as moment from 'moment';
-
+import { AES } from 'crypto-js';
+import { enc } from 'crypto-js';
+import { EventoExpressService } from 'src/app/services/eventoExpress/evento-express.service';
+import { EventoExpress } from 'src/app/services/eventoExpress/evento-express.model';
+import { EntradaExpressService } from 'src/app/services/entradaExpress/entrada-express.service';
 
 // CONTINUAR CON LO SIGUIENTE
 // // // // AGREGAR EN LOS ARREGLOS LA FECHA DE LA ENTRADA / SALIDA
@@ -24,27 +28,28 @@ import * as moment from 'moment';
 // AGREGAR STORAGE Y ACTUALIZAR LAS PROPIEDADES EN CADA NUEVO REGISTRO
 // CREAR UN METODO DE VALIDACION
 
-    
+     
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss']
+  styleUrls: ['home.page.scss'],
 })
 export class HomePage {
   account: Account;
-  codigoQR: any = ''
-  identificadorTorniquete: any = localStorage.getItem('sede')
-  pin_input: any = localStorage.getItem('pin_input')
-  pin_output: any = localStorage.getItem('pin_out')
-  sedeLogin: any = localStorage.getItem('sede')
-  sedeTorniquete: any = []
-  mensaje: any = "Escanea tu QR en el lector"
-  img: any = ""
-  lastId: any = undefined
-  newId: any = undefined
-  codeSend: any
-  webHook: any = "https://hook.us1.make.com/hnsg8quugqfed73zgrxigild2afbocwj"
-  loading:any
+  codigoQR: string = '';
+  identificadorTorniquete: string = localStorage.getItem('sede');
+  pin_input: string = localStorage.getItem('pin_input');
+  pin_output: string = localStorage.getItem('pin_out');
+  sedeLogin: string = localStorage.getItem('sede');
+  sedeTorniquete: any = [];
+  mensaje: string = 'Escanea tu QR en el lector';
+  img: any = '';
+  lastId: any = undefined;
+  newId: any = undefined;
+  codeSend: any;
+  webHook: string = 'https://hook.us1.make.com/hnsg8quugqfed73zgrxigild2afbocwj';
+  keyEncrypt: string = 'Newo2023-';
+  loading: any;
   recordsStorageMiembros = [];
   recordsStorageInvitados = [];
 
@@ -59,16 +64,278 @@ export class HomePage {
     private http: HttpClient,
     private storage: Storage,
     private storageIonicServer: StorageIonicServer,
-    private loadingController:LoadingController
+    private loadingController: LoadingController,
+    private eventoExpressService: EventoExpressService,
+    private entradaExpressService: EntradaExpressService
   ) {
     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-    console.log('fechaHoy--->',fechaHoy)
-    this.loadHistoryStorage()
+    this.loadHistoryStorage();
     // this.clearStorage()
   }
-  async loadHistoryStorage(){
-    const itemsStorage = await this.storageIonicServer.getAllItems()
-    console.log("itemsStorage==>",itemsStorage)
+
+  keypress(event) {
+    if (event.key == 'Enter') {
+      const code = this.codigoQR.split(',');
+      if (code.length === 2) {
+        const decode = this.desencriptarTexto(code[1], this.keyEncrypt).split(',');
+        if (decode.length === 6) {
+          this.controllerEventosExpress(decode, code[0]);
+        } else {
+          this.resetDonut();
+        }
+      } else {
+        const codeReset = code[0] + code[1] + code[2];
+        codeReset === '666' ? this.resetAll() : null;
+        this.codeSend = {};
+        this.codeSend.typeRegister = code[0]; //entrada 0 salida 1
+        this.codeSend.typeUser = code[1]; //usuario 1 invitado 2
+        this.codeSend.idUser = code[2]; //id_usuario / id_invitado 2
+        this.codeSend.sede = localStorage.getItem('sede'); //sede
+        this.codeSend.dateRegister = new Date().toISOString(); //fecha registro
+        this.codeSend.dateInvitation = code[5];
+        (this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1') && (code.length === 6 || code.length === 5)
+          ? this.processCode(this.codeSend)
+          : this.resetDonut();
+      }
+    }
+  }
+
+  processCode(code: any) {
+    this.mensaje = 'Validando tu código QR';
+    this.loadDonut();
+    this.valueDonut(25);
+    if (code.typeUser != '' || code.typeUser != undefined) {
+      this.controller(code);
+    }
+  }
+
+  async controller(code: any) {
+    document.getElementById('code').focus();
+    if (code.typeUser === '1') {
+      this.validateMember(code);
+    } else {
+      const valTimeInv = await this.validateTimeInvitation(code.idUser, code);
+      if (await this.validateTimeInvitation(code.idUser, code)) {
+        this.valueDonut(50);
+        this.sendWebHook();
+      } else {
+        this.loadDonutError(true);
+      }
+    }
+  }
+
+  // ---------------
+  // ---------------
+  // ---------------
+  // EVENTO EXPRESS
+  // ---------------
+  // ---------------
+  // ---------------
+
+  async controllerEventosExpress(code, type) {
+    this.loadDonut();
+    this.valueDonut(25);
+    const codeEvent = await this.serializeData(code);
+    // Cargar evento
+    const event = await this.getEventExpress(codeEvent.idEvent);
+    // Obtener tipo de registro ¿entrada / salida?
+    let typeEvent: string;
+    type == 0 ? (typeEvent = 'in') : (typeEvent = 'out');
+    console.log("type",type)
+    console.log("typeEvent",typeEvent)
+    // Validar vigencia del evento
+    const validity = await this.checkEventValidity(event.fechaInicioEvento, event.fechaFinEvento);
+    !validity.status ? this.loadDonutError(true, validity.message) : null;
+    this.valueDonut(50);
+    // Validar entrada
+    let validityIn;
+    let validityOut;
+    this.codeSend = {
+      codeEvent: codeEvent,
+      event: event
+    };
+    this.codeSend.dateRegister = new Date().toISOString(); //fecha registro
+    this.codeSend.typeRegister = type;
+    this.codeSend.sede = localStorage.getItem('sede'); //sede
+   
+    if (typeEvent === 'in') {
+      validityIn = await this.validityInEvent(event, codeEvent);
+      !validityIn.status ? this.loadDonutError(true, validityIn.message) : null;
+      validityIn.status ? this.sendWebHook() : null;
+      
+    }
+    // Validar salida
+    else {
+      validityOut = await this.validityOutEvent(event, codeEvent);
+      !validityOut.status ? this.loadDonutError(true, validityOut.message) : null;
+      validityOut.status ? this.sendWebHook() : null;
+    }
+    this.valueDonut(75);
+ 
+ 
+  }
+
+  async validityOutEvent(event, code) {
+    try {
+      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
+      const success = await this.entradaExpressService
+        .query({
+          'emailInvitado.equals': code.email,
+          'eventoExpressId.equals': event.id,
+          sort: ['registroFecha,desc'],
+          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          size: 1,
+        })
+        .toPromise();
+
+      const numberRecords = success.body.length;
+      if (numberRecords === 0 || success.body[0].salida) {
+        return {
+          status: false,
+          message: 'No cuentas con registros de entrada',
+        };
+      } else {
+        return {
+          status: true,
+          message: 'Tu ultimo registro es una entrada.',
+        };
+      }
+    } catch (error) {
+      console.error('error_entradaExpressService', error);
+      throw {
+        status: false,
+        message: error,
+      };
+    }
+  }
+
+  async validityInEvent(event, code) {
+    try {
+      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
+      const success = await this.entradaExpressService
+        .query({
+          'emailInvitado.equals': code.email,
+          'eventoExpressId.equals': event.id,
+          sort: ['registroFecha,desc'],
+          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          size: 1,
+        })
+        .toPromise();
+
+      const numberRecords = success.body.length;
+      if (numberRecords === 0) {
+        return {
+          status: true,
+          message: 'Primer registro',
+        };
+      } else if (success.body[0].salida) {
+        return {
+          status: true,
+          message: 'Ultimo registro es salida',
+        };
+      } else {
+        return {
+          status: false,
+          message: 'Tienes un registro de entrada sin finalizar.',
+        };
+      }
+    } catch (error) {
+      console.error('error_entradaExpressService', error);
+      throw {
+        status: false,
+        message: error,
+      };
+    }
+  }
+
+  serializeData(code: string[]): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let codeEvent = {
+        type: '',
+        idEvent: '',
+        name: '',
+        email: '',
+        date: '',
+        time: '',
+      };
+
+      [codeEvent.type, codeEvent.idEvent, codeEvent.name, codeEvent.email, codeEvent.date, codeEvent.time] = code;
+
+      resolve(codeEvent);
+    });
+  }
+
+  async getEventExpress(id): Promise<any> {
+    try {
+      const success = await this.eventoExpressService
+        .query({
+          'id.equals': id,
+        })
+        .toPromise();
+
+      if (success.body.length > 0) {
+        return success.body[0];
+      } else {
+        return {
+          status: 'No existen registros',
+          message: 'No se encontraron eventos para el ID proporcionado.',
+        };
+      }
+    } catch (error) {
+      console.error('error_eventoExpressService', error);
+      throw error;
+    }
+  }
+
+  checkEventValidity(start, end) {
+    const startEvent = new Date(Number(start));
+    const endEvent = new Date(Number(end));
+    const now = new Date();
+
+    // Quitamos las horas, minutos, segundos y milisegundos de las fechas
+    const startEventDateOnly = new Date(startEvent.getFullYear(), startEvent.getMonth(), startEvent.getDate());
+    const endEventDateOnly = new Date(endEvent.getFullYear(), endEvent.getMonth(), endEvent.getDate());
+    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (startEventDateOnly <= nowDateOnly && nowDateOnly <= endEventDateOnly) {
+      return Promise.resolve({
+        status: true,
+        message: 'El evento está vigente.',
+      });
+    } else if (nowDateOnly < startEventDateOnly) {
+      return Promise.resolve({
+        status: false,
+        message: 'El evento aún no ha comenzado.',
+      });
+    } else {
+      return Promise.resolve({
+        status: false,
+        message: 'El evento ha finalizado.',
+      });
+    }
+  }
+
+  encriptarTexto(texto: string, clave: string): string {
+    const textoEncriptado = AES.encrypt(texto, clave).toString();
+    return textoEncriptado;
+  }
+
+  desencriptarTexto(textoEncriptado: string, clave: string): string {
+    const bytes = AES.decrypt(textoEncriptado, clave);
+    const textoDesencriptado = bytes.toString(enc.Utf8);
+    return textoDesencriptado;
+  }
+
+  // ---------------
+  // ---------------
+  // ---------------
+  // EVENTO EXPRESS
+  // ---------------
+  // ---------------
+  // ---------------
+
+  async loadHistoryStorage() {
+    const itemsStorage = await this.storageIonicServer.getAllItems();
   }
 
   async presentLoading() {
@@ -142,7 +409,7 @@ export class HomePage {
   // async saveRecordsOfDayMiembros(records) {
 
   //   await Promise.all(records.map(async (element) => {
-  //     let typeRecord 
+  //     let typeRecord
   //     element.salida ? typeRecord = 0 : typeRecord = 1;
   //     const dateRegister = element.registroFecha
   //     const miembro = await this.getMiembro(element.user.id);
@@ -155,7 +422,7 @@ export class HomePage {
 
   // async saveRecordsOfDayInvitados(records) {
   //   await Promise.all(records.map(async (element) => {
-  //     let typeRecord 
+  //     let typeRecord
   //     element.salida ? typeRecord = 0 : typeRecord = 1;
   //     const dateRegister = element.registroFecha
   //     if (element.invitado !== null) {
@@ -167,13 +434,11 @@ export class HomePage {
   //     } else {
   //       // handle the case where myObject is null
   //     }
-      
-   
+
   //   }));
 
   //   return this.recordsStorageInvitados;
   // }
-
 
   // async queryRecordsOfDayMiembros() {
   //   return new Promise((resolve, reject) => {
@@ -217,11 +482,11 @@ export class HomePage {
 
   async getMiembro(userId) {
     return new Promise((resolve, reject) => {
-      this.miembrosService.query({'id.equals': userId}).subscribe(
-        success => {
+      this.miembrosService.query({ 'id.equals': userId }).subscribe(
+        (success) => {
           resolve(success.body);
         },
-        error => {
+        (error) => {
           reject(error);
         }
       );
@@ -230,22 +495,22 @@ export class HomePage {
 
   async getUltimaEntradaMiembro(userId) {
     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-    console.log('fechaHoy.toISOString---->',fechaHoy.toISOString())
     return new Promise((resolve, reject) => {
-      this.entradaMiembrosService.query({
-        'userId.equals': userId,
-        'size': 1,
-        'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
-        'sort': ['registroFecha,desc']
-      }).subscribe(
-        success => {
-          console.log("entradaMiembrosService",success.body[0])
-          resolve(success.body[0]);
-        },
-        error => {
-          reject(error);
-        }
-      );
+      this.entradaMiembrosService
+        .query({
+          'userId.equals': userId,
+          size: 1,
+          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          sort: ['registroFecha,desc'],
+        })
+        .subscribe(
+          (success) => {
+            resolve(success.body[0]);
+          },
+          (error) => {
+            reject(error);
+          }
+        );
     });
   }
 
@@ -253,49 +518,50 @@ export class HomePage {
     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
 
     return new Promise((resolve, reject) => {
-      this.entradaInvitadosService.query({
-        'invitadoId.equals': invitadoId,
-        'size': 1,
-        'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
-        'sort': ['registroFecha,desc']
-      }).subscribe(
-        success => {
-          resolve(success.body[0]);
-        },
-        error => {
-          reject(error);
-        }
-      );
+      this.entradaInvitadosService
+        .query({
+          'invitadoId.equals': invitadoId,
+          size: 1,
+          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          sort: ['registroFecha,desc'],
+        })
+        .subscribe(
+          (success) => {
+            resolve(success.body[0]);
+          },
+          (error) => {
+            reject(error);
+          }
+        );
     });
   }
 
   async getInvitacion(userId) {
     const fechaHoy = moment().utcOffset(-5).add(-1, 'day').startOf('day').toDate(); // Fecha de inicio del día en la hora local
     return new Promise((resolve, reject) => {
-      this.invitacionService.query({
-        'invitadoId.equals': userId,
-        'fechaFin.greaterOrEqualThan': fechaHoy.toISOString(),
-        'sort': ['fechaFin,asc'],
-      }).subscribe(
-        success => {
-          resolve(success.body);
-        },
-        error => {
-          reject(error);
-        }
-      );
+      this.invitacionService
+        .query({
+          'invitadoId.equals': userId,
+          'fechaFin.greaterOrEqualThan': fechaHoy.toISOString(),
+          sort: ['fechaFin,asc'],
+        })
+        .subscribe(
+          (success) => {
+            resolve(success.body);
+          },
+          (error) => {
+            reject(error);
+          }
+        );
     });
   }
 
-
-
-  async saveStorage(key,value) {
-    await this.storageIonicServer.setItem(key,value);
+  async saveStorage(key, value) {
+    await this.storageIonicServer.setItem(key, value);
   }
 
   async getKeyStorage(key) {
     const valor = await this.storageIonicServer.getItem(key);
-    console.log("valor_getKeyStorage",valor);
   }
 
   async deleteKeyStorage(key) {
@@ -308,154 +574,73 @@ export class HomePage {
 
   async getAllItemsStorage() {
     const items = await this.storageIonicServer.getAllItems();
-    console.log("items",items);
   }
 
   async getAllKeysStorage() {
     const keys = await this.storageIonicServer.getAllKeys();
-    return keys
+    return keys;
   }
 
   ionViewDidEnter() {
-    (document.getElementById('qrCodeInput'))
-      ? document.getElementById('qrCodeInput').focus()
-      : null;
-    this.loadSede()
-    console.log("this.pin_input", this.pin_input)
-    console.log("this.pin_output", this.pin_output)
-    console.log("this.sedeLogin", this.sedeLogin)
-
+    document.getElementById('qrCodeInput') ? document.getElementById('qrCodeInput').focus() : null;
+    this.loadSede();
   }
 
   loadSede() {
-    this.sedesService.query({
-      'id.equals': this.sedeLogin
-    }).subscribe(
-      succes => {
-        this.sedeLogin = succes.body[0].nombreSede
-        console.log(this.sedeLogin)
-      }
-    )
+    this.sedesService
+      .query({
+        'id.equals': this.sedeLogin,
+      })
+      .subscribe((succes) => {
+        this.sedeLogin = succes.body[0].nombreSede;
+      });
   }
 
-  keypress(event) {
-    if (event.key == "Enter") {
-      const code = this.codigoQR.split(',')
-      console.log("code---->",code)
-      console.log("code---->",code.length)
-      const codeReset = code[0] + code[1] + code[2]
-      codeReset === '666' ? this.resetAll() : null;
-      this.codeSend = {}
-      this.codeSend.typeRegister = code[0] //entrada 0 salida 1
-      this.codeSend.typeUser = code[1] //usuario 1 invitado 2
-      this.codeSend.idUser = code[2] //id_usuario / id_invitado 2
-      this.codeSend.sede = localStorage.getItem('sede') //sede
-      this.codeSend.dateRegister = new Date().toISOString() //fecha registro
-      this.codeSend.dateInvitation = code[5];
-      ((this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1') && (code.length === 6 || code.length === 5))
-        ? this.processCode(this.codeSend)
-        : this.resetDonut()
-    }
-  }
-
-  processCode(code: any) {
-    console.log("code---input-",code)
-    console.log("code---input-",JSON.stringify(code))
-    this.mensaje = 'Validando tu código QR'
-    this.loadDonut()
-    this.valueDonut(25);
-    if (code.typeUser != '' || code.typeUser != undefined) {
-      this.controller(code)
-    }
-  }
-
-  async controller(code: any) {
-    document.getElementById('code').focus();
-    if (code.typeUser === '1') {
-      this.validateMember(code)
-    } else {
-      const valTimeInv = await this.validateTimeInvitation(code.idUser,code);
-      console.log('valTimeInv',valTimeInv)
-      if (await this.validateTimeInvitation(code.idUser,code)) {
-        this.valueDonut(50)
-        this.sendWebHook()
-      } else {
-        this.loadDonutError(true)
-      }
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   async validateMember(code) {
     let sinSalida = false;
     let sinEntrada = false;
-    this.mensaje = 'Validando miembro.'
-    this.valueDonut(50)
+    this.mensaje = 'Validando miembro.';
+    this.valueDonut(50);
     const getMiembro = await this.getMiembro(code.idUser);
-    const getUltimaEntradaMiembro:any = await this.getUltimaEntradaMiembro(getMiembro[0].user.id);
+    const getUltimaEntradaMiembro: any = await this.getUltimaEntradaMiembro(getMiembro[0].user.id);
     //ENTRADA
-    if(getUltimaEntradaMiembro != undefined){
-      if(code.typeRegister == 0){
-        if(!getUltimaEntradaMiembro.salida){
+    if (getUltimaEntradaMiembro != undefined) {
+      if (code.typeRegister == 0) {
+        if (!getUltimaEntradaMiembro.salida) {
           sinSalida = true;
         }
       }
       //SALIDA
-      else if(code.typeRegister == 1){
-        if(getUltimaEntradaMiembro.salida){
+      else if (code.typeRegister == 1) {
+        if (getUltimaEntradaMiembro.salida) {
           sinEntrada = true;
         }
       }
-    }else{
-      if(code.typeRegister == 1){
-          sinEntrada = true;
+    } else {
+      if (code.typeRegister == 1) {
+        sinEntrada = true;
       }
     }
 
-    const time = new Date(Number(this.codeSend.dateInvitation))
-    const now = new Date()
-    const tiempoDiferencia = (now.getTime() - time.getTime())
+    const time = new Date(Number(this.codeSend.dateInvitation));
+    const now = new Date();
+    const tiempoDiferencia = now.getTime() - time.getTime();
     const diferenciaMinutos = Math.floor(((tiempoDiferencia % 86400000) % 3600000) / 60000);
-    console.log(`diferenciaMinutos ${diferenciaMinutos}`)
     if (diferenciaMinutos > 10) {
-      this.mensaje = 'Código QR ha expirado, genera uno nuevo.'
-      this.loadDonutError(true)
-    }else if(sinSalida){
-      this.mensaje = 'Tienes un registro de entrada sin finalizar.'
-      this.loadDonutError(true)
-    }else if(sinEntrada){
-      this.mensaje = 'No cuentas con registros de entrada.'
-      this.loadDonutError(true)
+      this.mensaje = 'Código QR ha expirado, genera uno nuevo.';
+      this.loadDonutError(true);
+    } else if (sinSalida) {
+      this.mensaje = 'Tienes un registro de entrada sin finalizar.';
+      this.loadDonutError(true);
+    } else if (sinEntrada) {
+      this.mensaje = 'No cuentas con registros de entrada.';
+      this.loadDonutError(true);
     } else {
-      this.sendWebHook()
+      this.sendWebHook();
     }
   }
 
-
-
-
-
-
-
-
-
-  async validateTimeInvitation(id: any,code:any): Promise<boolean> {
+  async validateTimeInvitation(id: any, code: any): Promise<boolean> {
     let resultado = false;
     this.mensaje = 'Validando invitado.';
     this.valueDonut(50);
@@ -467,60 +652,58 @@ export class HomePage {
       let sinSalida = false;
       let sinEntrada = false;
       if (fechaFin > fechaActual) {
-        const miembroSuccess = await this.miembrosService.query({
-          'userId.equals': success.body[0].invitado.user.id
-        }).toPromise();
-        const ingresoSedes = miembroSuccess.body[0].nivel.ingresoSedes
+        const miembroSuccess = await this.miembrosService
+          .query({
+            'userId.equals': success.body[0].invitado.user.id,
+          })
+          .toPromise();
+        const ingresoSedes = miembroSuccess.body[0].nivel.ingresoSedes;
         const userActivated = miembroSuccess.body[0].user.activated;
-        if(ingresoSedes && userActivated){
-
-
-          const ultimoRegistroInvitado:any = await this.getUltimaEntradaInvitado(invitadoId);
-          console.log("ultimoRegistroInvitado",ultimoRegistroInvitado)
-          if(ultimoRegistroInvitado != undefined){
+        if (ingresoSedes && userActivated) {
+          const ultimoRegistroInvitado: any = await this.getUltimaEntradaInvitado(invitadoId);
+          if (ultimoRegistroInvitado != undefined) {
             //ENTRADA
-            if(code.typeRegister == 0){
-              if(!ultimoRegistroInvitado.salida){
-                resultado = false
+            if (code.typeRegister == 0) {
+              if (!ultimoRegistroInvitado.salida) {
+                resultado = false;
                 sinSalida = true;
-                this.mensaje = 'Tienes un registro de entrada sin finalizar.'
-              }else{
-                resultado = true
+                this.mensaje = 'Tienes un registro de entrada sin finalizar.';
+              } else {
+                resultado = true;
               }
             }
             //SALIDA
-            else if(code.typeRegister == 1){
-              if(ultimoRegistroInvitado.salida){
+            else if (code.typeRegister == 1) {
+              if (ultimoRegistroInvitado.salida) {
                 sinEntrada = true;
-                resultado = false
-                this.mensaje = 'No cuentas con registros de entrada.'
-              }else{
-                resultado = true
+                resultado = false;
+                this.mensaje = 'No cuentas con registros de entrada.';
+              } else {
+                resultado = true;
               }
-            }else{
-              resultado = false
-              this.mensaje = 'Vuelve a escanear el codigo, si el problema persiste genera uno nuevo.'
+            } else {
+              resultado = false;
+              this.mensaje = 'Vuelve a escanear el codigo, si el problema persiste genera uno nuevo.';
             }
-          }else{
-            if(code.typeRegister == 1){
+          } else {
+            if (code.typeRegister == 1) {
               sinEntrada = true;
-              resultado = false
-              this.mensaje = 'No cuentas con registros de entrada.'
-            }else{
-              resultado = true
+              resultado = false;
+              this.mensaje = 'No cuentas con registros de entrada.';
+            } else {
+              resultado = true;
             }
           }
-        }else{
-        this.mensaje = "Quien te invito no cuenta con los permisos necesarios."
-        resultado = false
+        } else {
+          this.mensaje = 'Quien te invito no cuenta con los permisos necesarios.';
+          resultado = false;
         }
-          
       } else {
-        this.mensaje = "Código QR ha expirado, genera uno nuevo"
+        this.mensaje = 'Código QR ha expirado, genera uno nuevo';
         resultado = false;
       }
     } catch (error) {
-      console.error("error_invitacionService", error);
+      console.error('error_invitacionService', error);
     }
     return resultado;
   }
@@ -529,71 +712,33 @@ export class HomePage {
     // https://us1.make.com/30786/scenarios/868157/logs/6bacb8bfa8db4134990371df8ae2937e?showCheckRuns=true
     this.http.post(this.webHook, this.codeSend, { responseType: 'text' }).subscribe(
       async (response) => {
-        if(response != 'Accepted'){
-          const responseJson = JSON.parse(response)
-          console.log('responseJson',responseJson)
-          if(responseJson.status === 'ok'){
-            
-            this.successDonut(Number(this.codeSend.typeRegister),responseJson);
-
-          }else{
-            this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.'
-            this.loadDonutError(true)
+        console.log("response--->",response)
+        if (response != 'Accepted') {
+          const responseJson = JSON.parse(response);
+          if (responseJson.status === 'ok') {
+              this.successDonut(Number(this.codeSend.typeRegister), responseJson);
+          } else {
+            this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.';
+            this.loadDonutError(true);
           }
-        }else{
-          this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.'
-          this.loadDonutError(true)
+        } else {
+          this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.';
+          this.loadDonutError(true);
         }
       },
       (error) => {
+        this.loadDonutError(true, "Error de conexión vuelva a intentar.")
         console.error('Error en la petición:', error);
       }
     );
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   resetAll() {
-    localStorage.setItem('sede', '')
-    localStorage.setItem('pin_out', '')
-    localStorage.setItem('pin_out', '')
-    this.navController.navigateRoot('/')
+    localStorage.setItem('sede', '');
+    localStorage.setItem('pin_out', '');
+    localStorage.setItem('pin_out', '');
+    this.navController.navigateRoot('/');
   }
-
-
-
-
 
   autofocus() {
     setTimeout(() => {
@@ -601,42 +746,17 @@ export class HomePage {
     }, 500);
 
     setTimeout(() => {
-      document.getElementById('qrCodeInput').focus()
+      document.getElementById('qrCodeInput').focus();
     }, 2000);
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /* Controladores de vista */
 
-  loadDonutError(status: boolean) {
+  loadDonutError(status: boolean, mensaje?: string) {
+    mensaje ? (this.mensaje = mensaje) : null;
     let rootElement = document.documentElement;
-    rootElement.style.setProperty("--donut-value-medicion", '0');
-    setTimeout( ()=> {
+    rootElement.style.setProperty('--donut-value-medicion', '0');
+    setTimeout(() => {
       let donut = document.getElementById('donut');
       let qrimg = document.getElementById('qr-img');
       let error = document.getElementById('error');
@@ -645,12 +765,12 @@ export class HomePage {
       error.classList.remove('hidden');
     }, 500);
     setTimeout(() => {
-      this.resetDonut()
+      this.resetDonut();
     }, 3000);
   }
 
   loadDonut() {
-    this.img = "assets/img/donut-step-1.png"
+    this.img = 'assets/img/donut-step-1.png';
     let donut = document.getElementById('donut');
     let qrimg = document.getElementById('qr-img');
     let msgerror = document.getElementById('error');
@@ -663,91 +783,92 @@ export class HomePage {
     let rootElement = document.documentElement;
     setTimeout(function () {
       const donutVal = val;
-      rootElement.style.setProperty("--donut-value-medicion", donutVal);
+      rootElement.style.setProperty('--donut-value-medicion', donutVal);
     }, 200);
   }
 
-  async successDonut(estadoQR: number,responseJson) {
-    this.valueDonut(70)
+  async successDonut(estadoQR: number, responseJson) {
+    this.valueDonut(70);
     setTimeout(() => {
-      this.valueDonut(100)
+      this.valueDonut(100);
     }, 2000);
     const fechaActual = moment().toDate();
     if (estadoQR == 0) {
-      this.mensaje = `¡Bienvenido a Newo ${this.sedeLogin}!`
-      await this.storageIonicServer.setItem(`{"id":${this.codeSend.idUser},"type":"entrada","fecha": ${fechaActual}}`,JSON.stringify(responseJson))
-      this.activatePinE()
-      this.img = "assets/img/donut-step-5.png"
+      this.mensaje = `¡Bienvenido a Newo ${this.sedeLogin}!`;
+      await this.storageIonicServer.setItem(
+        `{"id":${this.codeSend.idUser},"type":"entrada","fecha": ${fechaActual}}`,
+        JSON.stringify(responseJson)
+      );
+      this.activatePinE();
+      this.img = 'assets/img/donut-step-5.png';
       setTimeout(() => {
-      this.resetDonut()
+        this.resetDonut();
       }, 3000);
     } else {
-      this.mensaje = "¡Hasta pronto!"
-      await this.storageIonicServer.setItem(`{"id":${this.codeSend.idUser},"type":"salida","fecha": ${fechaActual}}`,JSON.stringify(responseJson))
-      this.activatePinS()
-      this.img = "assets/img/donut-step-5.png"
+      this.mensaje = '¡Hasta pronto!';
+      await this.storageIonicServer.setItem(
+        `{"id":${this.codeSend.idUser},"type":"salida","fecha": ${fechaActual}}`,
+        JSON.stringify(responseJson)
+      );
+      this.activatePinS();
+      this.img = 'assets/img/donut-step-5.png';
       setTimeout(() => {
-      this.resetDonut()
+        this.resetDonut();
       }, 3000);
     }
   }
 
-
   resetDonut() {
-    this.img = "assets/img/donut-step-1.png"
+    this.img = 'assets/img/donut-step-1.png';
     let donut = document.getElementById('donut');
     let porcentaje = document.getElementById('porcentaje');
     let msgdonut = document.getElementById('msg-donut');
     let qrImg = document.getElementById('qr-img');
     let msgeError = document.getElementById('error');
-    msgdonut.classList.remove('hidden')
-    qrImg.classList.remove('hidden')
-    donut.classList.add('hidden')
+    msgdonut.classList.remove('hidden');
+    qrImg.classList.remove('hidden');
+    donut.classList.add('hidden');
     // porcentaje.classList.add('hidden')
-    msgeError.classList.add('hidden')
-    this.valueDonut(0)
-    this.mensaje = "Escanea tu QR en el lector"
-    this.codigoQR = ''
-    document.getElementById('qrCodeInput').focus()
+    msgeError.classList.add('hidden');
+    this.valueDonut(0);
+    this.mensaje = 'Escanea tu QR en el lector';
+    this.codigoQR = '';
+    document.getElementById('qrCodeInput').focus();
   }
-
 
   activatePinE() {
     this.http.get(`http://localhost:8000/apagar/${this.pin_input}`).subscribe(
-      success => {
-      }, error => {
-        console.error("error_OFF_pin", error)
+      (success) => {},
+      (error) => {
+        console.error('error_OFF_pin', error);
       }
-    )
+    );
 
     setTimeout(() => {
       this.http.get(`http://localhost:8000/encender/${this.pin_input}`).subscribe(
-        success => {
-        }, error => {
-          console.error("error_ON_pin", error)
+        (success) => {},
+        (error) => {
+          console.error('error_ON_pin', error);
         }
-      )
+      );
     }, 3000);
   }
 
   activatePinS() {
     this.http.get(`http://localhost:8000/apagar/${this.pin_output}`).subscribe(
-      success => {
-      }, error => {
-        console.error("error_OFF_pin", error)
+      (success) => {},
+      (error) => {
+        console.error('error_OFF_pin', error);
       }
-    )
+    );
 
     setTimeout(() => {
       this.http.get(`http://localhost:8000/encender/${this.pin_output}`).subscribe(
-        success => {
-        }, error => {
-          console.error("error_ON_pin", error)
+        (success) => {},
+        (error) => {
+          console.error('error_ON_pin', error);
         }
-      )
+      );
     }, 3000);
   }
-
-
-
 }
