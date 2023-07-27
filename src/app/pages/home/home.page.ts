@@ -152,6 +152,7 @@ export class HomePage {
     // Validar entrada
     let validityIn;
     let validityOut;
+    let validityEmailExist;
     this.codeSend = {
       codeEvent: codeEvent,
       event: event
@@ -162,9 +163,11 @@ export class HomePage {
    
     if (typeEvent === 'in') {
       validityIn = await this.validityInEvent(event, codeEvent);
+      validityEmailExist = await this.validityEmailExist(event, codeEvent);
+      console.log("validityEmailExist",validityEmailExist)
+      !validityEmailExist ? this.loadDonutError(true, "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
       !validityIn.status ? this.loadDonutError(true, validityIn.message) : null;
-      validityIn.status ? this.sendWebHook() : null;
-      
+      validityIn.status && validityEmailExist ? this.sendWebHook() : null;
     }
     // Validar salida
     else {
@@ -201,6 +204,67 @@ export class HomePage {
           status: true,
           message: 'Tu ultimo registro es una entrada.',
         };
+      }
+    } catch (error) {
+      console.error('error_entradaExpressService', error);
+      throw {
+        status: false,
+        message: error,
+      };
+    }
+  }
+
+  async validityRecordsEvent(event, code) {
+    try {
+      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
+      const success = await this.entradaExpressService
+        .query({
+          'salida.equals': false,
+          'eventoExpressId.equals': event.id,
+          sort: ['registroFecha,desc'],
+          size:500
+        })
+        .toPromise();
+
+      // Obtener el arreglo de correos electrónicos de los objetos
+      const correosElectronicos = success.body.map(objeto => objeto.emailInvitado);
+      
+      // Obtener el número de correos electrónicos únicos utilizando un Set
+      const correosElectronicosUnicos = new Set(correosElectronicos);
+      const invitados = correosElectronicosUnicos.size;
+      const capacidad = event.numeroInvitados;
+      console.log("Número de correos electrónicos únicos:", invitados);
+      if(capacidad >= invitados){
+        console.log('puede continuar')
+        return true
+      }else{
+        console.log('no puede continuar')
+        return false
+      }
+      
+    } catch (error) {
+      console.error('error_entradaExpressService', error);
+      throw {
+        status: false,
+        message: error,
+      };
+    }
+  }
+
+  async validityEmailExist(event, code) {
+    try {
+      const success = await this.entradaExpressService
+        .query({
+          'emailInvitado.equals': code.email,
+          'eventoExpressId.equals': event.id,
+        })
+        .toPromise();
+      const numberRecords = success.body.length;
+      if (numberRecords === 0) {
+        const validityRecords = await this.validityRecordsEvent(event, code);
+        return validityRecords
+      } else{
+        return true
       }
     } catch (error) {
       console.error('error_entradaExpressService', error);
