@@ -76,10 +76,12 @@ export class HomePage {
   keypress(event) {
     if (event.key == 'Enter') {
       const code = this.codigoQR.split(',');
-      if (code.length === 2) {
-        const decode = this.desencriptarTexto(code[1], this.keyEncrypt).split(',');
+      if (code.length === 7) {
+        const type = [code[0]];
+        const decode = code.slice(1);
+        console.log("decode",decode)
         if (decode.length === 6) {
-          this.controllerEventosExpress(decode, code[0]);
+          this.controllerEventosExpress(decode, type[0]);
         } else {
           this.resetDonut();
         }
