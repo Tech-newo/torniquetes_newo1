@@ -28,7 +28,6 @@ import { EntradaExpressService } from 'src/app/services/entradaExpress/entrada-e
 // AGREGAR STORAGE Y ACTUALIZAR LAS PROPIEDADES EN CADA NUEVO REGISTRO
 // CREAR UN METODO DE VALIDACION
 
-     
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -79,7 +78,6 @@ export class HomePage {
       if (code.length === 7) {
         const type = [code[0]];
         const decode = code.slice(1);
-        console.log("decode",decode)
         if (decode.length === 6) {
           this.controllerEventosExpress(decode, type[0]);
         } else {
@@ -143,10 +141,8 @@ export class HomePage {
     // Obtener tipo de registro ¿entrada / salida?
     let typeEvent: string;
     type == 0 ? (typeEvent = 'in') : (typeEvent = 'out');
-    console.log("type",type)
-    console.log("typeEvent",typeEvent)
     // Validar vigencia del evento
-    const validity = await this.checkEventValidity(event.fechaInicioEvento, event.fechaFinEvento);
+    const validity = await this.checkEventValidity(event.fechaInicioEvento, event.fechaFinEvento, event.sedes.id);
     !validity.status ? this.loadDonutError(true, validity.message) : null;
     this.valueDonut(50);
     // Validar entrada
@@ -160,11 +156,9 @@ export class HomePage {
     this.codeSend.dateRegister = new Date().toISOString(); //fecha registro
     this.codeSend.typeRegister = type;
     this.codeSend.sede = localStorage.getItem('sede'); //sede
-   
     if (typeEvent === 'in') {
       validityIn = await this.validityInEvent(event, codeEvent);
       validityEmailExist = await this.validityEmailExist(event, codeEvent);
-      console.log("validityEmailExist",validityEmailExist)
       !validityEmailExist ? this.loadDonutError(true, "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
       !validityIn.status ? this.loadDonutError(true, validityIn.message) : null;
       validityIn.status && validityEmailExist ? this.sendWebHook() : null;
@@ -233,13 +227,10 @@ export class HomePage {
       const correosElectronicosUnicos = new Set(correosElectronicos);
       const invitados = correosElectronicosUnicos.size;
       const capacidad = event.numeroInvitados;
-      console.log("Número de correos electrónicos únicos:", invitados);
-      if(capacidad >= invitados){
-        console.log('puede continuar')
-        return true
+      if(capacidad > invitados){
+        return true;
       }else{
-        console.log('no puede continuar')
-        return false
+        return false;
       }
       
     } catch (error) {
@@ -262,7 +253,7 @@ export class HomePage {
       const numberRecords = success.body.length;
       if (numberRecords === 0) {
         const validityRecords = await this.validityRecordsEvent(event, code);
-        return validityRecords
+        return validityRecords;
       } else{
         return true
       }
@@ -353,22 +344,25 @@ export class HomePage {
     }
   }
 
-  checkEventValidity(start, end) {
+  checkEventValidity(start, end, sedeId) {
     const startEvent = new Date(Number(start));
     const endEvent = new Date(Number(end));
     const now = new Date();
-
     // Quitamos las horas, minutos, segundos y milisegundos de las fechas
-    const startEventDateOnly = new Date(startEvent.getFullYear(), startEvent.getMonth(), startEvent.getDate());
     const endEventDateOnly = new Date(endEvent.getFullYear(), endEvent.getMonth(), endEvent.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    if (startEventDateOnly <= nowDateOnly && nowDateOnly <= endEventDateOnly) {
+    if(sedeId !== localStorage.getItem('sede')){
+      return Promise.resolve({
+        status: false,
+        message: 'El evento no pertenece a esta sede.',
+      });
+    }
+    else if (startEvent <= now && nowDateOnly <= endEventDateOnly) {
       return Promise.resolve({
         status: true,
         message: 'El evento está vigente.',
       });
-    } else if (nowDateOnly < startEventDateOnly) {
+    } else if (now < startEvent) {
       return Promise.resolve({
         status: false,
         message: 'El evento aún no ha comenzado.',
@@ -418,7 +412,7 @@ export class HomePage {
   //   if(registrosTodayMiembros){
   //     const valor = await this.storageIonicServer.getItem(`${date}-MIEMBROS`);
   //     this.recordsStorageMiembros = valor;
-  //     console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
+  //     //console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
   //     this.getAllItemsStorage()
   //     // this.clearStorage()
   //   }else{
@@ -426,7 +420,7 @@ export class HomePage {
   //     const queryRecordsOfDayMiembros = await this.queryRecordsOfDayMiembros();
   //     const saveRecordsOfDayMiembros = await this.saveRecordsOfDayMiembros(queryRecordsOfDayMiembros);
   //     this.saveStorage(`${date}-MIEMBROS`,saveRecordsOfDayMiembros)
-  //     console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
+  //     //console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
   //     this.loading.dismiss()
   //   }
 
@@ -434,14 +428,14 @@ export class HomePage {
   //     this.getAllItemsStorage()
   //     const valor = await this.storageIonicServer.getItem(`${date}-INVITADOS`);
   //     this.recordsStorageInvitados = valor;
-  //     console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
+  //     //console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
   //   }else{
   //     this.presentLoading()
   //     const queryRecordsOfDayOnvitados = await this.queryRecordsOfDayOnvitados();
   //     const saveRecordsOfDayInvitados = await this.saveRecordsOfDayInvitados(queryRecordsOfDayOnvitados);
   //     const date = new Date().toLocaleDateString("es-ES");
   //     this.saveStorage(`${date}-INVITADOS`,saveRecordsOfDayInvitados)
-  //     console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
+  //     //console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
   //     this.loading.dismiss()
   //   }
   // }
@@ -778,7 +772,6 @@ export class HomePage {
     // https://us1.make.com/30786/scenarios/868157/logs/6bacb8bfa8db4134990371df8ae2937e?showCheckRuns=true
     this.http.post(this.webHook, this.codeSend, { responseType: 'text' }).subscribe(
       async (response) => {
-        console.log("response--->",response)
         if (response != 'Accepted') {
           const responseJson = JSON.parse(response);
           if (responseJson.status === 'ok') {
