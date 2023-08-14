@@ -141,6 +141,7 @@ export class HomePage {
     // Obtener tipo de registro ¿entrada / salida?
     let typeEvent: string;
     type == 0 ? (typeEvent = 'in') : (typeEvent = 'out');
+    console.log(typeEvent)
     // Validar vigencia del evento
     const validity = await this.checkEventValidity(event.fechaInicioEvento, event.fechaFinEvento, event.sedes.id);
     !validity.status ? this.loadDonutError(true, validity.message) : null;
@@ -153,6 +154,7 @@ export class HomePage {
       codeEvent: codeEvent,
       event: event
     };
+    console.log(this.codeSend)
     this.codeSend.dateRegister = new Date().toISOString(); //fecha registro
     this.codeSend.typeRegister = type;
     this.codeSend.sede = localStorage.getItem('sede'); //sede
@@ -161,7 +163,7 @@ export class HomePage {
       validityEmailExist = await this.validityEmailExist(event, codeEvent);
       !validityEmailExist ? this.loadDonutError(true, "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
       !validityIn.status ? this.loadDonutError(true, validityIn.message) : null;
-      validityIn.status && validityEmailExist ? this.sendWebHook() : null;
+      validityIn.status && validityEmailExist && validity.status ? this.sendWebHook() : null;
     }
     // Validar salida
     else {
@@ -278,7 +280,6 @@ export class HomePage {
           size: 1,
         })
         .toPromise();
-
       const numberRecords = success.body.length;
       if (numberRecords === 0) {
         return {
@@ -351,7 +352,7 @@ export class HomePage {
     // Quitamos las horas, minutos, segundos y milisegundos de las fechas
     const endEventDateOnly = new Date(endEvent.getFullYear(), endEvent.getMonth(), endEvent.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    if(sedeId !== localStorage.getItem('sede')){
+    if(String(sedeId) !== String(localStorage.getItem('sede'))){
       return Promise.resolve({
         status: false,
         message: 'El evento no pertenece a esta sede.',
