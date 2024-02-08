@@ -1,32 +1,20 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
-import { EntradaInvitados } from 'src/app/services/entradaInvitados/entrada-invitados.model';
 import { EntradaInvitadosService } from 'src/app/services/entradaInvitados/entrada-invitados.service';
-import { EntradaMiembros } from 'src/app/services/entradaMiembros/entrada-miembors.model';
 import { EntradaMiembrosService } from 'src/app/services/entradaMiembros/entrada-miembros.service';
 import { InvitacionService } from 'src/app/services/invitacion/invitacion.service';
 import { InvitadosService } from 'src/app/services/invitados/invitados.service';
 import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
-import { LoginPage } from '../login/login.page';
 import { Storage } from '@ionic/storage-angular';
 import { StorageIonicServer } from 'src/app/services/storage/storage.service';
 import * as moment from 'moment';
 import { AES } from 'crypto-js';
 import { enc } from 'crypto-js';
 import { EventoExpressService } from 'src/app/services/eventoExpress/evento-express.service';
-import { EventoExpress } from 'src/app/services/eventoExpress/evento-express.model';
 import { EntradaExpressService } from 'src/app/services/entradaExpress/entrada-express.service';
-
-// CONTINUAR CON LO SIGUIENTE
-// // // // AGREGAR EN LOS ARREGLOS LA FECHA DE LA ENTRADA / SALIDA
-// SI TIENE DATA DEL DIA GUARDAR DICHA DATA EN LAS PROPIEDADES
-//     recordsStorageMiembros = [];
-//     recordsStorageInvitados = [];
-// AGREGAR STORAGE Y ACTUALIZAR LAS PROPIEDADES EN CADA NUEVO REGISTRO
-// CREAR UN METODO DE VALIDACION
 
 @Component({
   selector: 'app-home',
@@ -61,7 +49,6 @@ export class HomePage {
     public entradaInvitadosService: EntradaInvitadosService,
     public invitacionService: InvitacionService,
     private http: HttpClient,
-    private storage: Storage,
     private storageIonicServer: StorageIonicServer,
     private loadingController: LoadingController,
     private eventoExpressService: EventoExpressService,
@@ -73,6 +60,7 @@ export class HomePage {
   }
 
   keypress(event) {
+    console.log('1,15951,v2,0,1707412513428', event)
     if (event.key == 'Enter') {
       const code = this.codigoQR.split(',');
       if (code.length === 7) {

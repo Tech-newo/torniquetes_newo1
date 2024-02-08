@@ -4,9 +4,10 @@
  <div class="container-donut">
   <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
 
-  <div class=" inputQR-2">
-    <input type="text"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" > 
-    <!-- <ion-input type="text"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" ></ion-input> -->
+  <div>
+  <!-- <div class=" inputQR-2"> -->
+  <div>
+    <input type="text" style="border: solid;"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" > 
    </div>
    <input type="text" id="code" class="hidden">
  </div>
