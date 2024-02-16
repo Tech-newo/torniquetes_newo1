@@ -12,20 +12,24 @@
   </div>
   <div class="table">
     <div class="header-table">
-      <p>E-mail</p>
+      <p>Miembro</p>
+      <!-- <p>Invitado</p> -->
       <p>Date</p>
       <p>Type</p>
     </div>
     <div class="content-info">
-      <div class='info-table'>
+      <div class='info-table' *ngFor="let record of recordEntrances" >
         <div class="chip">
-          <p>sarango@newo.co</p>
+          <p>{{record.user}}</p>
+        </div>
+        <!-- <div class="chip">
+          <p>{{record.guest}}</p>
+        </div> -->
+        <div class="chip">
+          <p>{{record.date | date:'short'}}</p>
         </div>
         <div class="chip">
-          <p>16/02/24 - 10:30am</p>
-        </div>
-        <div class="chip">
-          <p>Entrada</p>
+          <p>{{record.out ? 'Salida' : 'Entrada'}}</p>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
 import { EntradaInvitadosService } from 'src/app/services/entradaInvitados/entrada-invitados.service';
 import { EntradaMiembrosService } from 'src/app/services/entradaMiembros/entrada-miembros.service';
@@ -21,11 +21,11 @@ import { EntradaExpressService } from 'src/app/services/entradaExpress/entrada-e
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage {
+export class HomePage implements OnInit {
   account: Account;
+  currentDate = new Date(new Date().setHours(5,0,0,0)).toISOString()
   codigoQR: string = '';
   identificadorTorniquete: string = localStorage.getItem('sede');
-  sedeLogin: string = localStorage.getItem('sede');
   sedeTorniquete: any = [];
   mensaje: string = 'Escanea tu QR en el lector';
   img: any = '';
@@ -37,6 +37,8 @@ export class HomePage {
   loading: any;
   recordsStorageMiembros = [];
   recordsStorageInvitados = [];
+  recordEntrances = []
+  sede: any;
 
   constructor(
     public navController: NavController,
@@ -51,10 +53,101 @@ export class HomePage {
     private loadingController: LoadingController,
     private eventoExpressService: EventoExpressService,
     private entradaExpressService: EntradaExpressService
-  ) {
-    const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-    this.loadHistoryStorage();
-    // this.clearStorage()
+    ) { }
+    
+    ionViewDidEnter() {
+      document.getElementById('qrCodeInput') ? document.getElementById('qrCodeInput').focus() : null;
+    }
+    
+    ngOnInit() {
+      // const sede = sessionStorage.getItem('sede')
+      this.sede = '1502'
+      this.getLastEntrnacesByLocation('miembros')
+      // this.getLastEntrnacesByLocation('invitados')
+      // this.getLastEntrnacesByLocation('expres')
+
+    }
+
+  async getLastEntrnacesByLocation(type){
+    this.recordEntrances = []
+   switch (type) {
+    case 'miembros':
+      this.recordEntrances = await this.getEntracesByMiembroAndSede()
+      break;
+    case 'invitados':
+      // this.recordEntrances = await this.getEntracesByGuestsAndLocation()
+      console.log(await this.getEntracesByGuestsAndLocation())
+      break;
+    case 'expres':
+      // this.recordEntrances = await this.getEntracesByInvitationsAndLocation()
+      console.log(await this.getEntracesByInvitationsAndLocation())
+      break;
+   }
+  }
+
+  getEntracesByMiembroAndSede () {
+    return new Promise<any>((resolve, reject) => {
+       this.entradaMiembrosService.query(
+        {
+          'size' : 20,
+          'sedeId.equals': this.sede,
+          'registroFecha.greaterThanOrEqual': this.currentDate,
+          'sort' : ['id,desc']
+        }
+       ).subscribe({
+        next: response => {
+          const res : any = response.body
+          const transform = res.map(item => ({
+            user: item.user.email,
+            date: item.registroFecha,
+            out: item.salida,
+          }));
+          resolve(transform)
+        },
+        error: error => reject(error)
+      });
+    })
+  }
+
+  getEntracesByGuestsAndLocation () {
+    return new Promise<any>((resolve, reject) => {
+       this.entradaInvitadosService.query(
+        {
+          'size' : 20,
+          'sedeId.equals': this.sede,
+          'registroFecha.greaterThanOrEqual': this.currentDate,
+          'sort' : ['id,desc']
+         }
+       ).subscribe({
+        next: response => {
+          const res : any = response.body
+          const transform = res.map(item => ({
+            guest: item.invitado.correo,
+            user: item.invitado.user.email,
+            date: item.registroFecha,
+            out: item.salida,
+          }));
+          resolve(transform)
+        },
+        error: error => reject(error)
+      });
+    })
+  }
+
+  getEntracesByInvitationsAndLocation () {
+    return new Promise<any>(async (resolve, reject) => {
+       this.entradaExpressService.query(
+        {
+          'size' : 20,
+          'sedeId.equals': this.sede,
+          'registroFecha.greaterThanOrEqual': this.currentDate,
+          'sort' : ['id,desc']
+         }
+       ).subscribe({
+        next: response => resolve(response.body),
+        // error: error =>  reject(error)
+      });
+    })
   }
 
   keypress(event) {
@@ -370,10 +463,8 @@ export class HomePage {
   // ---------------
   // ---------------
   // ---------------
-
-  async loadHistoryStorage() {
-    const itemsStorage = await this.storageIonicServer.getAllItems();
-  }
+  
+  
 
   async presentLoading() {
     this.loading = await this.loadingController.create({
@@ -485,20 +576,8 @@ export class HomePage {
     return keys;
   }
 
-  ionViewDidEnter() {
-    document.getElementById('qrCodeInput') ? document.getElementById('qrCodeInput').focus() : null;
-    this.loadSede();
-  }
 
-  loadSede() {
-    this.sedesService
-      .query({
-        'id.equals': this.sedeLogin,
-      })
-      .subscribe((succes) => {
-        this.sedeLogin = succes.body[0].nombreSede;
-      });
-  }
+
 
   async validateMember(code) {
     let sinSalida = false;
