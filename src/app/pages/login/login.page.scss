@@ -55,6 +55,10 @@
 
 }
 
+.btn {
+    margin-top: 2.54vh;
+}
+
 section {
     display: flex;
     flex-direction: column;
@@ -78,4 +82,5 @@ ion-button {
     --background: var(--ion-color-white);
     --background-activated: var(--ion-color-white-shade);
     color: var(--ion-color-black);
+    text-transform: capitalize;
 }
