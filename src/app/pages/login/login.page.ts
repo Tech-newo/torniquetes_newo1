@@ -19,6 +19,7 @@ export class LoginPage  {
   isLogin: boolean = false;
   sedes: any ;
   handlerMessage: string;
+  selected: any;
 
 
   constructor(
@@ -55,11 +56,16 @@ export class LoginPage  {
      this.sedesService.query().subscribe({
       next: response => {
         this.sedes = response.body;
+        console.log(this.sedes)
       },
       error: error => {
         console.log(error)
       },
     });
+  }
+
+  sedeSelected(value) {
+    this.selected = value.id
   }
 
 
