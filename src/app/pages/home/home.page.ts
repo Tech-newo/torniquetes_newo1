@@ -66,8 +66,6 @@ export class HomePage {
         const decode = code.slice(1);
         if (decode.length === 6) {
           this.controllerEventosExpress(decode, type[0]);
-        } else {
-          this.resetDonut();
         }
       } else {
         const codeReset = code[0] + code[1] + code[2];
@@ -81,15 +79,13 @@ export class HomePage {
         this.codeSend.dateInvitation = code[5];
         (this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1') && (code.length === 6 || code.length === 5)
           ? this.processCode(this.codeSend)
-          : this.resetDonut();
+          : null;
       }
     }
   }
 
   processCode(code: any) {
     this.mensaje = 'Validando tu código QR';
-    this.loadDonut();
-    this.valueDonut(25);
     if (code.typeUser != '' || code.typeUser != undefined) {
       this.controller(code);
     }
@@ -102,10 +98,9 @@ export class HomePage {
     } else {
       const valTimeInv = await this.validateTimeInvitation(code.idUser, code);
       if (await this.validateTimeInvitation(code.idUser, code)) {
-        this.valueDonut(50);
         this.sendWebHook();
       } else {
-        this.loadDonutError(true);
+        this.handleFailedTransaction(true);
       }
     }
   }
@@ -119,8 +114,6 @@ export class HomePage {
   // ---------------
 
   async controllerEventosExpress(code, type) {
-    this.loadDonut();
-    this.valueDonut(25);
     const codeEvent = await this.serializeData(code);
     // Cargar evento
     const event = await this.getEventExpress(codeEvent.idEvent);
@@ -130,8 +123,7 @@ export class HomePage {
     console.log(typeEvent)
     // Validar vigencia del evento
     const validity = await this.checkEventValidity(event.fechaInicioEvento, event.fechaFinEvento, event.sedes.id);
-    !validity.status ? this.loadDonutError(true, validity.message) : null;
-    this.valueDonut(50);
+    !validity.status ? this.handleFailedTransaction(true, validity.message) : null;
     // Validar entrada
     let validityIn;
     let validityOut;
@@ -147,18 +139,16 @@ export class HomePage {
     if (typeEvent === 'in') {
       validityIn = await this.validityInEvent(event, codeEvent);
       validityEmailExist = await this.validityEmailExist(event, codeEvent);
-      !validityEmailExist ? this.loadDonutError(true, "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
-      !validityIn.status ? this.loadDonutError(true, validityIn.message) : null;
+      !validityEmailExist ? this.handleFailedTransaction(true, "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
+      !validityIn.status ? this.handleFailedTransaction(true, validityIn.message) : null;
       validityIn.status && validityEmailExist && validity.status ? this.sendWebHook() : null;
     }
     // Validar salida
     else {
       validityOut = await this.validityOutEvent(event, codeEvent);
-      !validityOut.status ? this.loadDonutError(true, validityOut.message) : null;
+      !validityOut.status ? this.handleFailedTransaction(true, validityOut.message) : null;
       validityOut.status ? this.sendWebHook() : null;
     }
-    this.valueDonut(75);
- 
  
   }
 
@@ -514,7 +504,6 @@ export class HomePage {
     let sinSalida = false;
     let sinEntrada = false;
     this.mensaje = 'Validando miembro.';
-    this.valueDonut(50);
     const getMiembro = await this.getMiembro(code.idUser);
     const getUltimaEntradaMiembro: any = await this.getUltimaEntradaMiembro(getMiembro[0].user.id);
     //ENTRADA
@@ -542,13 +531,13 @@ export class HomePage {
     const diferenciaMinutos = Math.floor(((tiempoDiferencia % 86400000) % 3600000) / 60000);
     if (diferenciaMinutos > 10) {
       this.mensaje = 'Código QR ha expirado, genera uno nuevo.';
-      this.loadDonutError(true);
+      this.handleFailedTransaction(true);
     } else if (sinSalida) {
       this.mensaje = 'Tienes un registro de entrada sin finalizar.';
-      this.loadDonutError(true);
+      this.handleFailedTransaction(true);
     } else if (sinEntrada) {
       this.mensaje = 'No cuentas con registros de entrada.';
-      this.loadDonutError(true);
+      this.handleFailedTransaction(true);
     } else {
       this.sendWebHook();
     }
@@ -557,7 +546,6 @@ export class HomePage {
   async validateTimeInvitation(id: any, code: any): Promise<boolean> {
     let resultado = false;
     this.mensaje = 'Validando invitado.';
-    this.valueDonut(50);
     try {
       const success = await this.invitacionService.findById(id).toPromise();
       const invitadoId = success.body[0].invitado.id;
@@ -629,18 +617,18 @@ export class HomePage {
         if (response != 'Accepted') {
           const responseJson = JSON.parse(response);
           if (responseJson.status === 'ok') {
-              this.successDonut(Number(this.codeSend.typeRegister), responseJson);
+              this.successfulTransaction();
           } else {
             this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.';
-            this.loadDonutError(true);
+            this.handleFailedTransaction(true);
           }
         } else {
           this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.';
-          this.loadDonutError(true);
+          this.handleFailedTransaction(true);
         }
       },
       (error) => {
-        this.loadDonutError(true, "Error de conexión vuelva a intentar.")
+        this.handleFailedTransaction(true, "Error de conexión vuelva a intentar.")
         console.error('Error en la petición:', error);
       }
     );
@@ -663,89 +651,14 @@ export class HomePage {
     }, 2000);
   }
 
-  /* Controladores de vista */
 
-  loadDonutError(status: boolean, mensaje?: string) {
-    mensaje ? (this.mensaje = mensaje) : null;
-    let rootElement = document.documentElement;
-    rootElement.style.setProperty('--donut-value-medicion', '0');
-    setTimeout(() => {
-      let donut = document.getElementById('donut');
-      let qrimg = document.getElementById('qr-img');
-      let error = document.getElementById('error');
-      donut.classList.add('hidden');
-      qrimg.classList.add('hidden');
-      error.classList.remove('hidden');
-    }, 500);
-    setTimeout(() => {
-      this.resetDonut();
-    }, 3000);
+  handleFailedTransaction(err, message?){
+    console.log('handleFailedTransaction', err, message)
+
   }
 
-  loadDonut() {
-    this.img = 'assets/img/donut-step-1.png';
-    let donut = document.getElementById('donut');
-    let qrimg = document.getElementById('qr-img');
-    let msgerror = document.getElementById('error');
-    donut.classList.remove('hidden');
-    qrimg.classList.add('hidden');
-    msgerror.classList.add('hidden');
+  successfulTransaction(resp?){
+    console.log('successfulTransaction', resp)
   }
-
-  valueDonut(val) {
-    let rootElement = document.documentElement;
-    setTimeout(function () {
-      const donutVal = val;
-      rootElement.style.setProperty('--donut-value-medicion', donutVal);
-    }, 200);
-  }
-
-  async successDonut(estadoQR: number, responseJson) {
-    this.valueDonut(70);
-    setTimeout(() => {
-      this.valueDonut(100);
-    }, 2000);
-    const fechaActual = moment().toDate();
-    if (estadoQR == 0) {
-      this.mensaje = `¡Bienvenido a Newo ${this.sedeLogin}!`;
-      await this.storageIonicServer.setItem(
-        `{"id":${this.codeSend.idUser},"type":"entrada","fecha": ${fechaActual}}`,
-        JSON.stringify(responseJson)
-      );
-      this.img = 'assets/img/donut-step-5.png';
-      setTimeout(() => {
-        this.resetDonut();
-      }, 3000);
-    } else {
-      this.mensaje = '¡Hasta pronto!';
-      await this.storageIonicServer.setItem(
-        `{"id":${this.codeSend.idUser},"type":"salida","fecha": ${fechaActual}}`,
-        JSON.stringify(responseJson)
-      );
-      this.img = 'assets/img/donut-step-5.png';
-      setTimeout(() => {
-        this.resetDonut();
-      }, 3000);
-    }
-  }
-
-  resetDonut() {
-    this.img = 'assets/img/donut-step-1.png';
-    let donut = document.getElementById('donut');
-    let porcentaje = document.getElementById('porcentaje');
-    let msgdonut = document.getElementById('msg-donut');
-    let qrImg = document.getElementById('qr-img');
-    let msgeError = document.getElementById('error');
-    msgdonut.classList.remove('hidden');
-    qrImg.classList.remove('hidden');
-    donut.classList.add('hidden');
-    // porcentaje.classList.add('hidden')
-    msgeError.classList.add('hidden');
-    this.valueDonut(0);
-    this.mensaje = 'Escanea tu QR en el lector';
-    this.codigoQR = '';
-    document.getElementById('qrCodeInput').focus();
-  }
-
   
 }
