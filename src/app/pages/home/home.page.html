@@ -1,13 +1,33 @@
-
-<div class="container"> 
-  
- <div class="container-donut">
-  <app-donut mensaje="{{mensaje}}" img="{{img}}"></app-donut>
-
+<div class="container">
   <div>
-  <div>
-    <input type="text" style="border: solid;"  autofocus="true" id="qrCodeInput"  color="transparent" [(ngModel)]="codigoQR" (keypress)="keypress($event)" > 
-   </div>
-   <input type="text" id="code" class="hidden">
- </div>
+    <div>
+      <input type="text" class="input" autofocus="true" id="qrCodeInput" color="transparent"
+        [(ngModel)]="codigoQR" (keypress)="keypress($event)">
+    </div>
+    <div class="btnContent">
+      <button class="btnJoin">Entrada</button>
+      <button class="btnExit">Salida</button>
+    </div>
+    <input type="text" id="code" class="hidden">
+  </div>
+  <div class="table">
+    <div class="header-table">
+      <p>E-mail</p>
+      <p>Date</p>
+      <p>Type</p>
+    </div>
+    <div class="content-info">
+      <div class='info-table'>
+        <div class="chip">
+          <p>sarango@newo.co</p>
+        </div>
+        <div class="chip">
+          <p>16/02/24 - 10:30am</p>
+        </div>
+        <div class="chip">
+          <p>Entrada</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
