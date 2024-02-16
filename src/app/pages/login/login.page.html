@@ -11,7 +11,7 @@
     <form >
       <ion-list>
         <ion-item>
-          <ion-input [(ngModel)]="account.username" name="username" label="Usuario"></ion-input>
+          <ion-input [(ngModel)]="account.username" name="username" label="Usuario" placeholder="Usuario"></ion-input>
         </ion-item>
         <ion-item>
           <ion-input [(ngModel)]="account.password" name="password" type="password" label="Contraseña"></ion-input>
@@ -28,6 +28,19 @@
 </ion-content>
 
 <ion-content class="ion-padding" *ngIf="isLogin">
+  <section>
+    <h4>Selecciona la sede</h4>
+
+    <div class="sedes">
+      <div *ngFor="let sede of sedes">
+        <div [ngClass]="selected == sede.id ? 'contentSede Selected' : 'contentSede'" (click)="sedeSelected(sede)">
+          <img src="../../../assets/img/{{sede.id}}.jpg" alt="Del Este">
+          <p>{{sede.nombreSede}}</p>
+          <div class="booking-imgBlur"></div>
+        </div>
+      </div>
+    </div>
+  </section>
   <div class="content-cards">
     <ion-card color="dark">
       <ion-card-header>
