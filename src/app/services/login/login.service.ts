@@ -25,14 +25,15 @@ export class LoginService {
             if (account !== null) {
               this.translate.use(account.langKey);
             }
-            resolve(data);
+            // resolve(data);
+            resolve({account})
           });
           return cb();
         },
         err => {
           this.logout();
           reject(err);
-          return cb(err);
+          return cb(err);          
         }
       );
     });

@@ -1,42 +1,24 @@
-<ion-content class="ion-padding" *ngIf="!statusLogin">
+<ion-content class="ion-padding" *ngIf="!isLogin">
   <section>
     <ion-toolbar>
       <ion-buttons slot="start">
         <ion-back-button></ion-back-button>
       </ion-buttons>
-      <ion-title *ngIf="!statusLogin">{{ 'LOGIN_TITLE' | translate }}</ion-title>
-      <ion-title *ngIf="statusLogin">Bienvenido</ion-title>
+      <ion-title *ngIf="!isLogin">{{ 'LOGIN_TITLE' | translate }}</ion-title>
+      <ion-title *ngIf="isLogin">Bienvenido</ion-title>
     </ion-toolbar>
   
-    <form (submit)="doLogin()">
+    <form >
       <ion-list>
-        
         <ion-item>
-          <ion-label>Sede</ion-label>
-          <ion-select  [(ngModel)]="sedeSelect" name="sedeSelect" multiple="false" placeholder="Seleccionar sede">
-            <ion-select-option *ngFor="let sede of sedes" value="{{sede.id}}">{{sede.nombreSede}}</ion-select-option>
-          </ion-select>
+          <ion-input [(ngModel)]="account.username" name="username" label="Usuario"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label>Usuario</ion-label>
-          <ion-input [(ngModel)]="account.username" name="username"></ion-input>
+          <ion-input [(ngModel)]="account.password" name="password" type="password" label="Contraseña"></ion-input>
         </ion-item>
-        <ion-item>
-          <ion-label>Contraseña</ion-label>
-          <ion-input [(ngModel)]="account.password" name="password" type="password"></ion-input>
-        </ion-item>
-  
-  
-          <ion-input type="hidden" [(ngModel)]="auxSede" name="auxSede" value="{{sedeSelect}},{{PINE}},{{PINS}}"></ion-input>
-        <!-- <ion-item>
-          <ion-label>{{ 'REMEMBER_ME' | translate }}</ion-label>
-          <ion-toggle [(ngModel)]="account.rememberMe" name="rememberMe"></ion-toggle>
-        </ion-item> -->
         <ion-row class="ion-padding">
           <ion-col>
-            <ion-label style="color: black;" id="outputMessage">{{mensajeProcedimiento}}</ion-label>
-  
-            <ion-button expand="block" type="button" (click)="selectOptions()" id="login">Ingresar</ion-button>
+            <ion-button expand="block" type="button" (click)="login()">Ingresar</ion-button>
           </ion-col>
         </ion-row>
       </ion-list>
@@ -45,9 +27,9 @@
 
 </ion-content>
 
-<ion-content class="ion-padding" *ngIf="statusLogin">
+<ion-content class="ion-padding" *ngIf="isLogin">
   <div class="content-cards">
-    <ion-card color="dark" (click)="clickCard('qr')">
+    <ion-card color="dark">
       <ion-card-header>
         <ion-card-title>Leer codigos QR</ion-card-title>
         <ion-card-subtitle>Ingresar al modulo</ion-card-subtitle>
@@ -58,7 +40,7 @@
       </ion-card-content>
     </ion-card>
     
-    <ion-card color="secondary" (click)="clickCard('history')">
+    <ion-card color="secondary">
       <ion-card-header>
         <ion-card-title>Historial de registros</ion-card-title>
         <ion-card-subtitle>Ingresar al modulo</ion-card-subtitle>
