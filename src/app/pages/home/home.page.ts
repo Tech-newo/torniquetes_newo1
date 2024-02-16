@@ -25,8 +25,6 @@ export class HomePage {
   account: Account;
   codigoQR: string = '';
   identificadorTorniquete: string = localStorage.getItem('sede');
-  pin_input: string = localStorage.getItem('pin_input');
-  pin_output: string = localStorage.getItem('pin_out');
   sedeLogin: string = localStorage.getItem('sede');
   sedeTorniquete: any = [];
   mensaje: string = 'Escanea tu QR en el lector';
@@ -394,140 +392,7 @@ export class HomePage {
     await this.loading.present();
   }
 
-  // async selfManageHistory(){
-  //   const registrosTodayMiembros = await this.getRecordsOfDayMiembros()
-  //   const getRecordsOfDayInvitados = await this.getRecordsOfDayInvitados()
-  //   const date = new Date().toLocaleDateString("es-ES");
-  //   if(registrosTodayMiembros){
-  //     const valor = await this.storageIonicServer.getItem(`${date}-MIEMBROS`);
-  //     this.recordsStorageMiembros = valor;
-  //     //console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
-  //     this.getAllItemsStorage()
-  //     // this.clearStorage()
-  //   }else{
-  //     this.presentLoading()
-  //     const queryRecordsOfDayMiembros = await this.queryRecordsOfDayMiembros();
-  //     const saveRecordsOfDayMiembros = await this.saveRecordsOfDayMiembros(queryRecordsOfDayMiembros);
-  //     this.saveStorage(`${date}-MIEMBROS`,saveRecordsOfDayMiembros)
-  //     //console.log("this.recordsStorageMiembros",this.recordsStorageMiembros)
-  //     this.loading.dismiss()
-  //   }
 
-  //   if(getRecordsOfDayInvitados){
-  //     this.getAllItemsStorage()
-  //     const valor = await this.storageIonicServer.getItem(`${date}-INVITADOS`);
-  //     this.recordsStorageInvitados = valor;
-  //     //console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
-  //   }else{
-  //     this.presentLoading()
-  //     const queryRecordsOfDayOnvitados = await this.queryRecordsOfDayOnvitados();
-  //     const saveRecordsOfDayInvitados = await this.saveRecordsOfDayInvitados(queryRecordsOfDayOnvitados);
-  //     const date = new Date().toLocaleDateString("es-ES");
-  //     this.saveStorage(`${date}-INVITADOS`,saveRecordsOfDayInvitados)
-  //     //console.log("this.recordsStorageInvitados",this.recordsStorageInvitados)
-  //     this.loading.dismiss()
-  //   }
-  // }
-
-  // async getRecordsOfDayMiembros(){
-  //   const date = new Date().toLocaleDateString("es-ES");
-  //   const fechas  = await this.storageIonicServer.getAllKeys();
-  //   const storageMiembros = fechas.filter(fecha => fecha.includes(`${date}-MIEMBROS`));
-  //   let registerToday = false;
-  //   if(storageMiembros.length > 0){
-  //     registerToday = true;
-  //   }else{
-  //     registerToday = false;
-  //   }
-  //   return registerToday;
-  // }
-
-  // async getRecordsOfDayInvitados(){
-  //   const date = new Date().toLocaleDateString("es-ES");
-  //   const fechas  = await this.storageIonicServer.getAllKeys();
-  //   const storageInvitados = fechas.filter(fecha => fecha.includes(`${date}-INVITADOS`));
-  //   let registerToday = false;
-  //   if(storageInvitados.length > 0){
-  //     registerToday = true;
-  //   }else{
-  //     registerToday = false;
-  //   }
-  //   return registerToday;
-  // }
-
-  // async saveRecordsOfDayMiembros(records) {
-
-  //   await Promise.all(records.map(async (element) => {
-  //     let typeRecord
-  //     element.salida ? typeRecord = 0 : typeRecord = 1;
-  //     const dateRegister = element.registroFecha
-  //     const miembro = await this.getMiembro(element.user.id);
-  //     const arr = `${typeRecord},1,${miembro[0].id},v2,${typeRecord},${element.registroFecha},${dateRegister}`;
-  //     this.recordsStorageMiembros.push(arr);
-  //   }));
-
-  //   return this.recordsStorageMiembros;
-  // }
-
-  // async saveRecordsOfDayInvitados(records) {
-  //   await Promise.all(records.map(async (element) => {
-  //     let typeRecord
-  //     element.salida ? typeRecord = 0 : typeRecord = 1;
-  //     const dateRegister = element.registroFecha
-  //     if (element.invitado !== null) {
-  //       const invitacion:any = await this.getInvitacion(element.invitado.id);
-  //       invitacion.forEach(element => {
-  //         const arr = `${typeRecord},2,${element.id},${element.fechaFin},${dateRegister}`;
-  //         this.recordsStorageInvitados.push(arr);
-  //       });
-  //     } else {
-  //       // handle the case where myObject is null
-  //     }
-
-  //   }));
-
-  //   return this.recordsStorageInvitados;
-  // }
-
-  // async queryRecordsOfDayMiembros() {
-  //   return new Promise((resolve, reject) => {
-  //     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-  //     const fechaManana = moment(fechaHoy).add(1, 'day').toDate(); // Fecha de inicio del día siguiente en la hora local
-  //     this.entradaMiembrosService.query({
-  //       'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
-  //       'registroFecha.lessThan': fechaManana.toISOString(),
-  //       'size': 999999,
-  //       'sort': ['registroFecha,asc'],
-  //       'sedeId.equals': localStorage.getItem('sede')
-  //     }).subscribe(
-  //       success => {
-  //         resolve(success.body);
-  //       }, error => {
-  //         reject(error);
-  //       }
-  //     )
-  //   });
-  // }
-
-  // async queryRecordsOfDayOnvitados() {
-  //   return new Promise((resolve, reject) => {
-  //     const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-  //     const fechaManana = moment(fechaHoy).add(1, 'day').toDate(); // Fecha de inicio del día siguiente en la hora local
-  //     this.entradaInvitadosService.query({
-  //       'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
-  //       'registroFecha.lessThan': fechaManana.toISOString(),
-  //       'size': 999999,
-  //       'sort': ['registroFecha,asc'],
-  //       'sedeId.equals': localStorage.getItem('sede')
-  //     }).subscribe(
-  //       success => {
-  //         resolve(success.body);
-  //       }, error => {
-  //         reject(error);
-  //       }
-  //     )
-  //   });
-  // }
 
   async getMiembro(userId) {
     return new Promise((resolve, reject) => {
@@ -847,7 +712,6 @@ export class HomePage {
         `{"id":${this.codeSend.idUser},"type":"entrada","fecha": ${fechaActual}}`,
         JSON.stringify(responseJson)
       );
-      this.activatePinE();
       this.img = 'assets/img/donut-step-5.png';
       setTimeout(() => {
         this.resetDonut();
@@ -858,7 +722,6 @@ export class HomePage {
         `{"id":${this.codeSend.idUser},"type":"salida","fecha": ${fechaActual}}`,
         JSON.stringify(responseJson)
       );
-      this.activatePinS();
       this.img = 'assets/img/donut-step-5.png';
       setTimeout(() => {
         this.resetDonut();
@@ -884,39 +747,5 @@ export class HomePage {
     document.getElementById('qrCodeInput').focus();
   }
 
-  activatePinE() {
-    this.http.get(`http://localhost:8000/apagar/${this.pin_input}`).subscribe(
-      (success) => {},
-      (error) => {
-        console.error('error_OFF_pin', error);
-      }
-    );
-
-    setTimeout(() => {
-      this.http.get(`http://localhost:8000/encender/${this.pin_input}`).subscribe(
-        (success) => {},
-        (error) => {
-          console.error('error_ON_pin', error);
-        }
-      );
-    }, 3000);
-  }
-
-  activatePinS() {
-    this.http.get(`http://localhost:8000/apagar/${this.pin_output}`).subscribe(
-      (success) => {},
-      (error) => {
-        console.error('error_OFF_pin', error);
-      }
-    );
-
-    setTimeout(() => {
-      this.http.get(`http://localhost:8000/encender/${this.pin_output}`).subscribe(
-        (success) => {},
-        (error) => {
-          console.error('error_ON_pin', error);
-        }
-      );
-    }, 3000);
-  }
+  
 }
