@@ -13,7 +13,7 @@ export class LoginPage implements OnInit {
   // The account fields for the login form.
   account: { username: string; password: string; rememberMe: boolean } = {
     username: 'sarango@newo.co',
-    password: 'Santiago3101.',
+    password: 'Santiago3101.ggg',
     rememberMe: false
   };
   auxSede: string = ''

@@ -1,9 +1,85 @@
 .container{
-    background: hsla(265, 53%, 29%, 1);
-    background: radial-gradient(circle, hsla(265, 53%, 29%, 1) 0%, hsla(0, 0%, 8%, 1) 80%);
+    background-color: var(--ion-color-black);
     width: 100vw;
-    max-height: 100vh;
-    z-index: -5;
+    height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2.54vh;
+    gap: 24px;
+
+    .input {
+        border: solid 0.5px var(--ion-color-lightgray1);
+        background-color: var(--ion-color-blackgray2);
+        border-radius: 8px;
+        margin-bottom: 24px;
+        width: 150px;
+    }
+
+    .btnContent {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        
+        button {
+            padding: 8px;
+            border-radius: 8px;
+            width: 150px;
+        }
+
+        .btnJoin:hover {
+            background-color: var(--ion-color-aqua);
+        }
+
+        .btnExit:hover {
+         background-color: var(--ion-color-yellow);   
+        }
+    }
+}
+
+.table {
+    width: 130vh;
+    height: 280px;
+    
+    .content-info {
+        height: 250px;
+        overflow-y: auto;
+    }
+
+    .header-table, .info-table {
+        display: grid;
+        grid-template-columns: 50% 30% 20%;
+        margin: 2.58vh;
+        gap: 0.85vh;
+
+        p {
+            margin: 0;
+            font-size: 10px;
+        }
+    }
+
+    .header-table {
+        p{
+            height: 16px;
+            font-weight: 600;
+            color: var(--ion-color-lightgray1);
+        }
+    }
+
+
+    .chip {
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
+        color: var(--ion-color-white);
+        background-color: var(--ion-color-blackgray2);
+        padding: 8px;
+        -webkit-box-shadow: 1px 2px 4px rgba(0,0,0,.5);
+        -moz-box-shadow: 1px 2px 4px rgba(0,0,0,.5);
+        box-shadow: 1px 2px 4px rgba(0,0,0,.5);
+    }
+
 }
 
 .hidden{
@@ -12,25 +88,4 @@
     height: 0px;
     position: absolute;
     left: -100px;
-}
-.inputQR-2{
-    position: absolute; 
-    top:45vh;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    width: 250px;
-    height: 50px;
-    opacity: .01;
-   // z-index: -1;
-//    border: solid red;
-}
-.container-donut{
-    height: 100vh;
-    display: flex;
-    align-items: center;
-}
-#qrCodeInput{
-    // color: #004343;
 }
