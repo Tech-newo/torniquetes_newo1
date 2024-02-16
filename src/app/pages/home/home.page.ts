@@ -60,12 +60,11 @@ export class HomePage implements OnInit {
     }
     
     ngOnInit() {
-      // const sede = sessionStorage.getItem('sede')
-      this.sede = '1502'
+      //verificar si esta loggeado
+      this.sede = JSON.parse(sessionStorage.getItem('sede'))
       this.getLastEntrnacesByLocation('miembros')
       // this.getLastEntrnacesByLocation('invitados')
       // this.getLastEntrnacesByLocation('expres')
-
     }
 
   async getLastEntrnacesByLocation(type){
@@ -90,7 +89,7 @@ export class HomePage implements OnInit {
        this.entradaMiembrosService.query(
         {
           'size' : 20,
-          'sedeId.equals': this.sede,
+          'sedeId.equals': this.sede['id'],
           'registroFecha.greaterThanOrEqual': this.currentDate,
           'sort' : ['id,desc']
         }
@@ -114,7 +113,7 @@ export class HomePage implements OnInit {
        this.entradaInvitadosService.query(
         {
           'size' : 20,
-          'sedeId.equals': this.sede,
+          'sedeId.equals': this.sede['id'],
           'registroFecha.greaterThanOrEqual': this.currentDate,
           'sort' : ['id,desc']
          }
@@ -139,7 +138,7 @@ export class HomePage implements OnInit {
        this.entradaExpressService.query(
         {
           'size' : 20,
-          'sedeId.equals': this.sede,
+          'sedeId.equals': this.sede['id'],
           'registroFecha.greaterThanOrEqual': this.currentDate,
           'sort' : ['id,desc']
          }

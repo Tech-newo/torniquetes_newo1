@@ -66,23 +66,20 @@ export class LoginPage  {
 
   sedeSelected(value) {
     this.selected = value.id
+    sessionStorage.setItem('sede',JSON.stringify(value))
   }
 
+  goHome(){
+    this.navController.navigateRoot('/tabs/home')
+  }
 
-  // clickCard(type){
-  //   if(type == 'qr'){
-  //     this.navController.navigateRoot('/tabs')
-  //   }else{
-  //     this.alerts('¡Modulo en desarrollo!')
-  //   }
-  // }
 
   async presentToast(message) {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
       color: 'dark',
-      position: 'middle'
+      position: 'top'
     });
     toast.present();
   }
