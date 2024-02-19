@@ -1,1 +1,2 @@
-web: ionic s
+web: node server.js
+
