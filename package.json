@@ -51,7 +51,6 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "ionic":"^7.0.0",
     "@angular-devkit/build-angular": "^14.2.13",
     "@angular-eslint/builder": "~12.0.0",
     "@angular-eslint/eslint-plugin": "~12.0.0",
