@@ -14,7 +14,7 @@
     "test:ci": "jest --runInBand",
     "test:coverage": "jest --coverage",
     "prettier": "prettier --write \"{,e2e/**/,src/**/}*.{js,json,html,md,ts,css,scss,yml}\" --loglevel silent",
-    "heroku-postbuild": "npm install -g ionic && npm run build"
+    "heroku-postbuild": "npm install -g ionic && npm install -g express && npm run build"
   },
   "private": true,
   "dependencies": {
@@ -45,6 +45,7 @@
     "@ngx-translate/core": "13.0.0",
     "@ngx-translate/http-loader": "6.0.0",
     "crypto-js": "^4.1.1",
+    "express": "^4.18.2",
     "ionic": "^5.4.16",
     "moment": "^2.29.4",
     "ngx-webstorage": "8.0.0",
