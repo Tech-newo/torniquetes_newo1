@@ -1,12 +1,14 @@
+h3 {
+    text-align: center;
+    margin: 0;
+}
+
 .container{
     background-color: var(--ion-color-black);
-    width: 100vw;
-    height: 100vh;
-    width: 100vw;
-    height: 100vh;
+    height: 90%;
     display: flex;
     align-items: center;
-    padding: 2.54vh;
+    padding: 0 2.54vh;
     gap: 24px;
 
     .input {
@@ -38,18 +40,89 @@
     }
 }
 
+.tables {
+    display: flex;
+    flex-direction: column;
+
+    .typeBtn {
+        display: flex;
+        gap: 1.7vh;
+
+        button {
+            border-radius: 8px;
+            font-size: 10px;
+            padding: 2px;
+            font-weight: 600;
+        }
+
+        .selected {
+            background-color: var(--ion-color-aqua);
+        }
+        
+        .btnTable {
+            background-color: var(--ion-color-blackgray3);
+        }
+    }
+}
+
 .table {
     width: 130vh;
-    height: 280px;
+    height: 230px;
+
     
     .content-info {
-        height: 250px;
+        height: 200px;
         overflow-y: auto;
     }
 
     .header-table, .info-table {
         display: grid;
         grid-template-columns: 50% 30% 20%;
+        margin: 2.58vh;
+        gap: 0.85vh;
+
+        p {
+            margin: 0;
+            font-size: 10px;
+        }
+    }
+
+    .header-table {
+        p{
+            height: 16px;
+            font-weight: 600;
+            color: var(--ion-color-lightgray1);
+        }
+    }
+
+
+    .chip {
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
+        color: var(--ion-color-white);
+        background-color: var(--ion-color-blackgray2);
+        padding: 8px;
+        -webkit-box-shadow: 1px 2px 4px rgba(0,0,0,.5);
+        -moz-box-shadow: 1px 2px 4px rgba(0,0,0,.5);
+        box-shadow: 1px 2px 4px rgba(0,0,0,.5);
+    }
+
+}
+
+
+.tableGuest {
+    width: 130vh;
+    height: 230px;
+
+    .content-info {
+        height: 200px;
+        overflow-y: auto;
+    }
+
+    .header-table, .info-table {
+        display: grid;
+        grid-template-columns: 30% 30% 20% 20%;
         margin: 2.58vh;
         gap: 0.85vh;
 

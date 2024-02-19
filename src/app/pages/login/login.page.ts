@@ -10,16 +10,14 @@ import { LoginService } from '../../services/login/login.service';
 })
 export class LoginPage  {
   account: { username: string; password: string; rememberMe: boolean } = {
-    username: 'sarango@newo.co',
-    password: 'Santiago3101.',
-    // username: '',
-    // password: '',
+    username: '',
+    password: '',
     rememberMe: false
   };
   isLogin: boolean = false;
   sedes: any ;
   handlerMessage: string;
-  selected: any;
+  selected: any = 0;
 
 
   constructor(
@@ -70,7 +68,11 @@ export class LoginPage  {
   }
 
   goHome(){
-    this.navController.navigateRoot('/tabs/home')
+    if (this.selected !== 0) {
+      this.navController.navigateRoot('/tabs/home')
+    } else {
+      this.presentToast('Seleccione una sede para continuar')
+    }
   }
 
 

@@ -1,27 +1,22 @@
-<ion-content class="ion-padding" *ngIf="!isLogin">
+<ion-content *ngIf="!isLogin">
   <section>
+    <div class="backgroundImg"><img src="../../../assets/img/newo.png" alt=""></div>
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-back-button></ion-back-button>
+        <!-- <ion-back-button></ion-back-button> -->
       </ion-buttons>
       <ion-title *ngIf="!isLogin">{{ 'LOGIN_TITLE' | translate }}</ion-title>
       <ion-title *ngIf="isLogin">Bienvenido</ion-title>
     </ion-toolbar>
-  
-    <form >
-      <ion-list>
-        <ion-item>
-          <ion-input [(ngModel)]="account.username" name="username" label="Usuario" placeholder="Usuario"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-input [(ngModel)]="account.password" name="password" type="password" label="Contraseña"></ion-input>
-        </ion-item>
-        <ion-row class="ion-padding">
-          <ion-col>
-            <ion-button expand="block" type="button" (click)="login()">Ingresar</ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-list>
+
+    <form>
+      <ion-input [(ngModel)]="account.username" name="username" label="Usuario" placeholder="user@newo.co"></ion-input>
+      <ion-input [(ngModel)]="account.password" name="password" type="password" label="Contraseña" placeholder="********"></ion-input>
+      <ion-row class="ion-padding">
+        <ion-col>
+          <ion-button expand="block" type="button" (click)="login()">Ingresar</ion-button>
+        </ion-col>
+      </ion-row>
     </form>
   </section>
 

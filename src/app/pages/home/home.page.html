@@ -1,37 +1,95 @@
-<div class="container">
-  <div>
+<ion-content>
+  <h3>{{sede.nombreSede}}</h3>
+
+  <div class="container">
     <div>
-      <input type="text" class="input" autofocus="true" id="qrCodeInput" color="transparent"
-        [(ngModel)]="codigoQR" (keypress)="keypress($event)">
+      <div>
+        <input type="text" class="input" autofocus="true" id="qrCodeInput" color="transparent"
+          [(ngModel)]="codigoQR" (keypress)="keypress($event)">
+      </div>
+      <div class="btnContent">
+        <button class="btnJoin" (click)="addPrefix('in')">Entrada</button>
+        <button class="btnExit" (click)="addPrefix('out')">Salida</button>
+      </div>
+      <input type="text" id="code" class="hidden">
     </div>
-    <div class="btnContent">
-      <button class="btnJoin" (click)="addPrefix('in')">Entrada</button>
-      <button class="btnExit" (click)="addPrefix('out')">Salida</button>
-    </div>
-    <input type="text" id="code" class="hidden">
-  </div>
-  <div class="table">
-    <div class="header-table">
-      <p>Miembro</p>
-      <!-- <p>Invitado</p> -->
-      <p>Date</p>
-      <p>Type</p>
-    </div>
-    <div class="content-info">
-      <div class='info-table' *ngFor="let record of recordEntrances" >
-        <div class="chip">
-          <p>{{record.user}}</p>
+    <section class="tables">
+      <div class="typeBtn">
+        <button [ngClass]="typeTable == 'member' ? 'selected': 'btnTable'" (click)="table('member'); this.getLastEntrnacesByLocation('miembros')" >Miembros</button>
+        <button [ngClass]="typeTable == 'guest' ? 'selected': 'btnTable'" (click)="table('guest'); this.getLastEntrnacesByLocation('invitados')" >Invitados</button>
+        <button [ngClass]="typeTable == 'express' ? 'selected': 'btnTable'" (click)="table('express'); this.getLastEntrnacesByLocation('expres')" >Invitacion Express</button>
+      </div>
+  
+      <div *ngIf="typeTable == 'member'" class="table">
+        <div class="header-table">
+          <p>Miembro</p>
+          <p>Fecha</p>
+          <p>Tipo</p>
         </div>
-        <!-- <div class="chip">
-          <p>{{record.guest}}</p>
-        </div> -->
-        <div class="chip">
-          <p>{{record.date | date:'short'}}</p>
-        </div>
-        <div class="chip">
-          <p>{{record.out ? 'Salida' : 'Entrada'}}</p>
+        <div class="content-info">
+          <div class='info-table' *ngFor="let record of recordEntrances" >
+            <div class="chip">
+              <p>{{record.user}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.date | date:'short'}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.out ? 'Salida' : 'Entrada'}}</p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+  
+      <div *ngIf="typeTable == 'guest'" class="tableGuest">
+        <div class="header-table">
+          <p>Miembro</p>
+          <p>Invitado</p>
+          <p>Fecha</p>
+          <p>Tipo</p>
+        </div>
+        <div class="content-info">
+          <div class='info-table' *ngFor="let record of recordGuests" >
+            <div class="chip">
+              <p>{{record.user}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.guest}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.date | date:'short'}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.out ? 'Salida' : 'Entrada'}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="typeTable == 'express'" class="tableGuest">
+        <div class="header-table">
+          <p>Miembro</p>
+          <p>Invitado</p>
+          <p>Fecha</p>
+          <p>Tipo</p>
+        </div>
+        <div class="content-info">
+          <div class='info-table' *ngFor="let record of recordExpress" >
+            <div class="chip">
+              <p>{{record.user}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.guest}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.date | date:'short'}}</p>
+            </div>
+            <div class="chip">
+              <p>{{record.out ? 'Salida' : 'Entrada'}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-</div>
+</ion-content>

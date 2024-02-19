@@ -29,7 +29,10 @@ export class HomePage implements OnInit {
   recordsStorageMiembros = [];
   recordsStorageInvitados = [];
   recordEntrances = []
+  recordGuests = []
+  recordExpress = []
   sede: any;
+  typeTable: string = 'member';
 
   constructor(
     public navController: NavController,
@@ -51,28 +54,34 @@ export class HomePage implements OnInit {
     }
     
     ngOnInit() {
-      //verificar si esta loggeado
       this.sede = JSON.parse(sessionStorage.getItem('sede'))
-      console.log( this.sede)
       this.getLastEntrnacesByLocation('miembros')
-      // this.getLastEntrnacesByLocation('invitados')
-      // this.getLastEntrnacesByLocation('expres')
+    }
+
+    table(value: string) {
+      this.typeTable = value
     }
 
   async getLastEntrnacesByLocation(type){
     this.recordEntrances = []
+    this.recordGuests= []
+    this.recordExpress= []
+    const loading = await this.loadingController.create({
+      duration: 2000,
+    });
+    await loading.present();
    switch (type) {
     case 'miembros':
-      // this.recordEntrances = await this.getEntracesByMiembroAndSede()
-      console.log(await this.getEntracesByMiembroAndSede())
+      this.recordEntrances = await this.getEntracesByMiembroAndSede()
+      loading.dismiss()
       break;
     case 'invitados':
-      // this.recordEntrances = await this.getEntracesByGuestsAndLocation()
-      console.log(await this.getEntracesByGuestsAndLocation())
+      this.recordGuests = await this.getEntracesByGuestsAndLocation()
+      loading.dismiss()
       break;
     case 'expres':
-      // this.recordEntrances = await this.getEntracesByInvitationsAndLocation()
-      console.log(await this.getEntracesByInvitationsAndLocation())
+      this.recordExpress = await this.getEntracesByInvitationsAndLocation()
+      loading.dismiss()
       break;
    }
   }

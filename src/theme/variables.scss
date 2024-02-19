@@ -148,7 +148,13 @@
   }
 
   --ngx-json-key: #fff;
+
+    ion-loading {
+      --spinner-color: var(--ion-color-aqua);
+      --background: var(--ion-color-blackgray2);
+  }
 }
+
 
 // @media (prefers-color-scheme: dark) {
 //   /*
