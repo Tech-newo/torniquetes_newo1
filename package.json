@@ -140,5 +140,9 @@
     ],
     "coverageDirectory": "./public/coverage"
   },
-  "description": "A hipster Ionic project, made with 💙 by @oktadev!"
+  "description": "A hipster Ionic project, made with 💙 by @oktadev!",
+  "engines": {
+    "node": "20.11.1",
+    "npm": "10.2.4"
+  }
 }
