@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { LoadingController, NavController } from '@ionic/angular';
+import { LoadingController, NavController, ToastController } from '@ionic/angular';
 import { EntradaInvitadosService } from 'src/app/services/entradaInvitados/entrada-invitados.service';
 import { EntradaMiembrosService } from 'src/app/services/entradaMiembros/entrada-miembros.service';
 import { InvitacionService } from 'src/app/services/invitacion/invitacion.service';
@@ -8,8 +8,6 @@ import { InvitadosService } from 'src/app/services/invitados/invitados.service';
 import { MiembrosService } from 'src/app/services/miembros/miembros.service';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { Account } from 'src/model/account.model';
-import { Storage } from '@ionic/storage-angular';
-import { StorageIonicServer } from 'src/app/services/storage/storage.service';
 import * as moment from 'moment';
 import { AES } from 'crypto-js';
 import { enc } from 'crypto-js';
@@ -23,18 +21,11 @@ import { EntradaExpressService } from 'src/app/services/entradaExpress/entrada-e
 })
 export class HomePage implements OnInit {
   account: Account;
-  currentDate = new Date(new Date().setHours(5,0,0,0)).toISOString()
+  currentDate = new Date(new Date().setHours(0,0,0,0)).toISOString()
   codigoQR: string = '';
-  identificadorTorniquete: string = localStorage.getItem('sede');
-  sedeTorniquete: any = [];
-  mensaje: string = 'Escanea tu QR en el lector';
-  img: any = '';
-  lastId: any = undefined;
-  newId: any = undefined;
   codeSend: any;
   webHook: string = 'https://hook.us1.make.com/hnsg8quugqfed73zgrxigild2afbocwj';
   keyEncrypt: string = 'Newo2023-';
-  loading: any;
   recordsStorageMiembros = [];
   recordsStorageInvitados = [];
   recordEntrances = []
@@ -48,8 +39,8 @@ export class HomePage implements OnInit {
     public entradaMiembrosService: EntradaMiembrosService,
     public entradaInvitadosService: EntradaInvitadosService,
     public invitacionService: InvitacionService,
+    private toastController: ToastController,
     private http: HttpClient,
-    private storageIonicServer: StorageIonicServer,
     private loadingController: LoadingController,
     private eventoExpressService: EventoExpressService,
     private entradaExpressService: EntradaExpressService
@@ -62,6 +53,7 @@ export class HomePage implements OnInit {
     ngOnInit() {
       //verificar si esta loggeado
       this.sede = JSON.parse(sessionStorage.getItem('sede'))
+      console.log( this.sede)
       this.getLastEntrnacesByLocation('miembros')
       // this.getLastEntrnacesByLocation('invitados')
       // this.getLastEntrnacesByLocation('expres')
@@ -71,7 +63,8 @@ export class HomePage implements OnInit {
     this.recordEntrances = []
    switch (type) {
     case 'miembros':
-      this.recordEntrances = await this.getEntracesByMiembroAndSede()
+      // this.recordEntrances = await this.getEntracesByMiembroAndSede()
+      console.log(await this.getEntracesByMiembroAndSede())
       break;
     case 'invitados':
       // this.recordEntrances = await this.getEntracesByGuestsAndLocation()
@@ -149,8 +142,12 @@ export class HomePage implements OnInit {
     })
   }
 
+  addPrefix(type) {
+    document.getElementById('qrCodeInput').focus();
+    setTimeout(() => {this.codigoQR = (type == 'in') ? '0,' : '1,'}, 5);
+  }
+
   keypress(event) {
-    console.log('1,15951,v2,0,1707412513428', event)
     if (event.key == 'Enter') {
       const code = this.codigoQR.split(',');
       if (code.length === 7) {
@@ -160,13 +157,11 @@ export class HomePage implements OnInit {
           this.controllerEventosExpress(decode, type[0]);
         }
       } else {
-        const codeReset = code[0] + code[1] + code[2];
-        codeReset === '666' ? this.resetAll() : null;
         this.codeSend = {};
         this.codeSend.typeRegister = code[0]; //entrada 0 salida 1
         this.codeSend.typeUser = code[1]; //usuario 1 invitado 2
         this.codeSend.idUser = code[2]; //id_usuario / id_invitado 2
-        this.codeSend.sede = localStorage.getItem('sede'); //sede
+        this.codeSend.sede = this.sede['id']; //sede
         this.codeSend.dateRegister = new Date().toISOString(); //fecha registro
         this.codeSend.dateInvitation = code[5];
         (this.codeSend.typeRegister === '0' || this.codeSend.typeRegister === '1') && (code.length === 6 || code.length === 5)
@@ -177,7 +172,6 @@ export class HomePage implements OnInit {
   }
 
   processCode(code: any) {
-    this.mensaje = 'Validando tu código QR';
     if (code.typeUser != '' || code.typeUser != undefined) {
       this.controller(code);
     }
@@ -215,7 +209,7 @@ export class HomePage implements OnInit {
     console.log(typeEvent)
     // Validar vigencia del evento
     const validity = await this.checkEventValidity(event.fechaInicioEvento, event.fechaFinEvento, event.sedes.id);
-    !validity.status ? this.handleFailedTransaction(true, validity.message) : null;
+    !validity.status ? this.handleFailedTransaction( validity.message) : null;
     // Validar entrada
     let validityIn;
     let validityOut;
@@ -227,18 +221,18 @@ export class HomePage implements OnInit {
     console.log(this.codeSend)
     this.codeSend.dateRegister = new Date().toISOString(); //fecha registro
     this.codeSend.typeRegister = type;
-    this.codeSend.sede = localStorage.getItem('sede'); //sede
+    this.codeSend.sede = this.sede['id']; //sede
     if (typeEvent === 'in') {
       validityIn = await this.validityInEvent(event, codeEvent);
       validityEmailExist = await this.validityEmailExist(event, codeEvent);
-      !validityEmailExist ? this.handleFailedTransaction(true, "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
-      !validityIn.status ? this.handleFailedTransaction(true, validityIn.message) : null;
+      !validityEmailExist ? this.handleFailedTransaction( "El evento esta lleno, no tiene capacidad para mas ingresos.") : null;
+      !validityIn.status ? this.handleFailedTransaction( validityIn.message) : null;
       validityIn.status && validityEmailExist && validity.status ? this.sendWebHook() : null;
     }
     // Validar salida
     else {
       validityOut = await this.validityOutEvent(event, codeEvent);
-      !validityOut.status ? this.handleFailedTransaction(true, validityOut.message) : null;
+      !validityOut.status ? this.handleFailedTransaction( validityOut.message) : null;
       validityOut.status ? this.sendWebHook() : null;
     }
  
@@ -246,13 +240,12 @@ export class HomePage implements OnInit {
 
   async validityOutEvent(event, code) {
     try {
-      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
       const success = await this.entradaExpressService
         .query({
           'emailInvitado.equals': code.email,
           'eventoExpressId.equals': event.id,
           sort: ['registroFecha,desc'],
-          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          'registroFecha.greaterOrEqualThan': this.currentDate,
           size: 1,
         })
         .toPromise();
@@ -338,13 +331,12 @@ export class HomePage implements OnInit {
 
   async validityInEvent(event, code) {
     try {
-      const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
       const success = await this.entradaExpressService
         .query({
           'emailInvitado.equals': code.email,
           'eventoExpressId.equals': event.id,
           sort: ['registroFecha,desc'],
-          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          'registroFecha.greaterOrEqualThan': this.currentDate,
           size: 1,
         })
         .toPromise();
@@ -420,7 +412,7 @@ export class HomePage implements OnInit {
     // Quitamos las horas, minutos, segundos y milisegundos de las fechas
     const endEventDateOnly = new Date(endEvent.getFullYear(), endEvent.getMonth(), endEvent.getDate());
     const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    if(String(sedeId) !== String(localStorage.getItem('sede'))){
+    if(String(sedeId) !== String(this.sede['id'])){
       return Promise.resolve({
         status: false,
         message: 'El evento no pertenece a esta sede.',
@@ -463,38 +455,23 @@ export class HomePage implements OnInit {
   // ---------------
   // ---------------
   
-  
-
-  async presentLoading() {
-    this.loading = await this.loadingController.create({
-      message: 'Cargando...',
-    });
-    await this.loading.present();
-  }
-
-
 
   async getMiembro(userId) {
     return new Promise((resolve, reject) => {
       this.miembrosService.query({ 'id.equals': userId }).subscribe(
-        (success) => {
-          resolve(success.body);
-        },
-        (error) => {
-          reject(error);
-        }
+        (success) => resolve(success.body),
+        (error) => reject(error)
       );
     });
   }
 
   async getUltimaEntradaMiembro(userId) {
-    const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
     return new Promise((resolve, reject) => {
       this.entradaMiembrosService
         .query({
           'userId.equals': userId,
           size: 1,
-          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          'registroFecha.greaterOrEqualThan': this.currentDate,
           sort: ['registroFecha,desc'],
         })
         .subscribe(
@@ -509,14 +486,12 @@ export class HomePage implements OnInit {
   }
 
   async getUltimaEntradaInvitado(invitadoId) {
-    const fechaHoy = moment().utcOffset(-5).startOf('day').toDate(); // Fecha de inicio del día en la hora local
-
     return new Promise((resolve, reject) => {
       this.entradaInvitadosService
         .query({
           'invitadoId.equals': invitadoId,
           size: 1,
-          'registroFecha.greaterOrEqualThan': fechaHoy.toISOString(),
+          'registroFecha.greaterOrEqualThan': this.currentDate,
           sort: ['registroFecha,desc'],
         })
         .subscribe(
@@ -531,12 +506,11 @@ export class HomePage implements OnInit {
   }
 
   async getInvitacion(userId) {
-    const fechaHoy = moment().utcOffset(-5).add(-1, 'day').startOf('day').toDate(); // Fecha de inicio del día en la hora local
     return new Promise((resolve, reject) => {
       this.invitacionService
         .query({
           'invitadoId.equals': userId,
-          'fechaFin.greaterOrEqualThan': fechaHoy.toISOString(),
+          'fechaFin.greaterOrEqualThan': this.currentDate,
           sort: ['fechaFin,asc'],
         })
         .subscribe(
@@ -550,72 +524,38 @@ export class HomePage implements OnInit {
     });
   }
 
-  async saveStorage(key, value) {
-    await this.storageIonicServer.setItem(key, value);
-  }
-
-  async getKeyStorage(key) {
-    const valor = await this.storageIonicServer.getItem(key);
-  }
-
-  async deleteKeyStorage(key) {
-    await this.storageIonicServer.removeItem(key);
-  }
-
-  async clearStorage() {
-    await this.storageIonicServer.clear();
-  }
-
-  async getAllItemsStorage() {
-    const items = await this.storageIonicServer.getAllItems();
-  }
-
-  async getAllKeysStorage() {
-    const keys = await this.storageIonicServer.getAllKeys();
-    return keys;
-  }
-
-
 
 
   async validateMember(code) {
-    let sinSalida = false;
-    let sinEntrada = false;
-    this.mensaje = 'Validando miembro.';
     const getMiembro = await this.getMiembro(code.idUser);
     const getUltimaEntradaMiembro: any = await this.getUltimaEntradaMiembro(getMiembro[0].user.id);
     //ENTRADA
     if (getUltimaEntradaMiembro != undefined) {
       if (code.typeRegister == 0) {
         if (!getUltimaEntradaMiembro.salida) {
-          sinSalida = true;
+          this.handleFailedTransaction( 'No cuentas con registros de entrada.');
+          return
         }
       }
       //SALIDA
       else if (code.typeRegister == 1) {
         if (getUltimaEntradaMiembro.salida) {
-          sinEntrada = true;
+          this.handleFailedTransaction( 'Tienes un registro de entrada sin finalizar.');
+          return 
+        }
+        if (getUltimaEntradaMiembro.sede.id != this.sede['id']) {
+          this.handleFailedTransaction( 'Tienes un registro de entrada en una sede diferente a la actual.');
+          return 
         }
       }
-    } else {
-      if (code.typeRegister == 1) {
-        sinEntrada = true;
-      }
-    }
+    } 
 
     const time = new Date(Number(this.codeSend.dateInvitation));
     const now = new Date();
     const tiempoDiferencia = now.getTime() - time.getTime();
     const diferenciaMinutos = Math.floor(((tiempoDiferencia % 86400000) % 3600000) / 60000);
     if (diferenciaMinutos > 10) {
-      this.mensaje = 'Código QR ha expirado, genera uno nuevo.';
-      this.handleFailedTransaction(true);
-    } else if (sinSalida) {
-      this.mensaje = 'Tienes un registro de entrada sin finalizar.';
-      this.handleFailedTransaction(true);
-    } else if (sinEntrada) {
-      this.mensaje = 'No cuentas con registros de entrada.';
-      this.handleFailedTransaction(true);
+      this.handleFailedTransaction( 'Código QR ha expirado, genera uno nuevo.');
     } else {
       this.sendWebHook();
     }
@@ -623,7 +563,6 @@ export class HomePage implements OnInit {
 
   async validateTimeInvitation(id: any, code: any): Promise<boolean> {
     let resultado = false;
-    this.mensaje = 'Validando invitado.';
     try {
       const success = await this.invitacionService.findById(id).toPromise();
       const invitadoId = success.body[0].invitado.id;
@@ -647,7 +586,7 @@ export class HomePage implements OnInit {
               if (!ultimoRegistroInvitado.salida) {
                 resultado = false;
                 sinSalida = true;
-                this.mensaje = 'Tienes un registro de entrada sin finalizar.';
+                 this.handleFailedTransaction( 'Tienes un registro de entrada sin finalizar.');
               } else {
                 resultado = true;
               }
@@ -657,29 +596,29 @@ export class HomePage implements OnInit {
               if (ultimoRegistroInvitado.salida) {
                 sinEntrada = true;
                 resultado = false;
-                this.mensaje = 'No cuentas con registros de entrada.';
+                 this.handleFailedTransaction( 'No cuentas con registros de entrada.');
               } else {
                 resultado = true;
               }
             } else {
               resultado = false;
-              this.mensaje = 'Vuelve a escanear el codigo, si el problema persiste genera uno nuevo.';
+               this.handleFailedTransaction( 'Vuelve a escanear el codigo, si el problema persiste genera uno nuevo.');
             }
           } else {
             if (code.typeRegister == 1) {
               sinEntrada = true;
               resultado = false;
-              this.mensaje = 'No cuentas con registros de entrada.';
+               this.handleFailedTransaction( 'No cuentas con registros de entrada.');
             } else {
               resultado = true;
             }
           }
         } else {
-          this.mensaje = 'Quien te invito no cuenta con los permisos necesarios.';
+           this.handleFailedTransaction( 'Quien te invito no cuenta con los permisos necesarios.');
           resultado = false;
         }
       } else {
-        this.mensaje = 'Código QR ha expirado, genera uno nuevo';
+         this.handleFailedTransaction( 'Código QR ha expirado, genera uno nuevo');
         resultado = false;
       }
     } catch (error) {
@@ -689,54 +628,54 @@ export class HomePage implements OnInit {
   }
 
   async sendWebHook() {
+    const loading = await this.loadingController.create({
+      duration: 10000,
+    });
+    await loading.present();
     // https://us1.make.com/30786/scenarios/868157/logs/6bacb8bfa8db4134990371df8ae2937e?showCheckRuns=true
     this.http.post(this.webHook, this.codeSend, { responseType: 'text' }).subscribe(
       async (response) => {
         if (response != 'Accepted') {
           const responseJson = JSON.parse(response);
           if (responseJson.status === 'ok') {
-              this.successfulTransaction();
+            loading.dismiss()
+            this.successfulTransaction();
           } else {
-            this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.';
-            this.handleFailedTransaction(true);
+            loading.dismiss()
+            this.handleFailedTransaction( 'Ocurrio un error de conexión, vuelve a intentar.');
           }
         } else {
-          this.mensaje = 'Ocurrio un error de conexión, vuelve a intentar.';
-          this.handleFailedTransaction(true);
+          loading.dismiss()
+          this.handleFailedTransaction( 'Ocurrio un error de conexión, vuelve a intentar.');
         }
       },
       (error) => {
-        this.handleFailedTransaction(true, "Error de conexión vuelva a intentar.")
+        loading.dismiss()
+        this.handleFailedTransaction( "Error de conexión vuelva a intentar.")
         console.error('Error en la petición:', error);
       }
     );
   }
 
-  resetAll() {
-    localStorage.setItem('sede', '');
-    localStorage.setItem('pin_out', '');
-    localStorage.setItem('pin_out', '');
-    this.navController.navigateRoot('/');
+  handleFailedTransaction(message){
+    this.codigoQR = ''
+    this.presentToast(message)
   }
 
-  autofocus() {
-    setTimeout(() => {
-      document.getElementById('code').focus();
-    }, 500);
-
-    setTimeout(() => {
-      document.getElementById('qrCodeInput').focus();
-    }, 2000);
+  successfulTransaction(){
+    this.codigoQR = ''
+    this.presentToast('Registro exitoso')
+    this.ngOnInit()
   }
 
-
-  handleFailedTransaction(err, message?){
-    console.log('handleFailedTransaction', err, message)
-
-  }
-
-  successfulTransaction(resp?){
-    console.log('successfulTransaction', resp)
+  async presentToast(message) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position:'top',
+      color:'dark'
+    });
+    toast.present();
   }
   
 }

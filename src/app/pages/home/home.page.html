@@ -5,8 +5,8 @@
         [(ngModel)]="codigoQR" (keypress)="keypress($event)">
     </div>
     <div class="btnContent">
-      <button class="btnJoin">Entrada</button>
-      <button class="btnExit">Salida</button>
+      <button class="btnJoin" (click)="addPrefix('in')">Entrada</button>
+      <button class="btnExit" (click)="addPrefix('out')">Salida</button>
     </div>
     <input type="text" id="code" class="hidden">
   </div>
