@@ -2,13 +2,15 @@
     // background-color: var(--ion-color-black);
     color: var(--ion-color-white);
 }
-.content-cards{
+
+.selectionSede {
+    scale: 2.5;
+}
+
+.contentLogin {
     display: flex;
-    justify-content: space-around;
-    ion-card{
-        width: 30vw;
-        cursor: pointer;
-    }
+    align-items: center;
+    justify-content: center;
 }
 
 .sedes {
@@ -65,11 +67,11 @@ section {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    width: 100vw;
+    scale: 1.5;
 
     .backgroundImg {
         position: absolute;
-        top: 60px;
+        top: 190px;
         
         img {
             height: 60vh;
@@ -101,4 +103,5 @@ ion-button {
 
 ion-toolbar {
     --background: transparent;
+    text-align: center;
 }

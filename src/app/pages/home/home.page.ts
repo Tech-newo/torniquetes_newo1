@@ -62,6 +62,10 @@ export class HomePage implements OnInit {
       this.typeTable = value
     }
 
+    close() {
+      this.navController.navigateForward('/');
+    }
+
   async getLastEntrnacesByLocation(type){
     this.recordEntrances = []
     this.recordGuests= []
@@ -81,6 +85,7 @@ export class HomePage implements OnInit {
       break;
     case 'expres':
       this.recordExpress = await this.getEntracesByInvitationsAndLocation()
+      console.log(this.recordExpress)
       loading.dismiss()
       break;
    }
