@@ -76,13 +76,13 @@
         <div class="content-info">
           <div class='info-table' *ngFor="let record of recordExpress" >
             <div class="chip">
-              <p>{{record.user}}</p>
+              <p>{{record.user.email}}</p>
             </div>
             <div class="chip">
-              <p>{{record.guest}}</p>
+              <p>{{record.emailInvitado}}</p>
             </div>
             <div class="chip">
-              <p>{{record.date | date:'short'}}</p>
+              <p>{{record.registroFecha._i | date:'short'}}</p>
             </div>
             <div class="chip">
               <p>{{record.out ? 'Salida' : 'Entrada'}}</p>
