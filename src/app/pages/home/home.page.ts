@@ -58,8 +58,8 @@ export class HomePage {
 
   close() {
     sessionStorage.clear()
-    this.navController.navigateForward('/');
-    window.location.reload()
+    this.navController.navigateForward('/').then(()=>window.location.reload())
+    
   }
 
   async getLastEntrnacesByLocation(type) {
