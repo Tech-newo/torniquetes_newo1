@@ -49,8 +49,7 @@ export class HomePage {
 
   ionViewDidEnter() {
     this.sede = JSON.parse(sessionStorage.getItem('sede'))
-    this.getLastEntrnacesByLocation('miembros')
-    console.log('ionViewDidEnter')
+    this.getLastEntrnacesByLocation(this.typeTable)
   }
 
   table(value: string) {
@@ -72,15 +71,15 @@ export class HomePage {
     });
     await loading.present();
     switch (type) {
-      case 'miembros':
+      case 'member':
         this.recordEntrances = await this.getEntracesByMiembroAndSede()
         loading.dismiss()
         break;
-      case 'invitados':
+      case 'guest':
         this.recordGuests = await this.getEntracesByGuestsAndLocation()
         loading.dismiss()
         break;
-      case 'expres':
+      case 'express':
         this.recordExpress = await this.getEntracesByInvitationsAndLocation()
         console.log(this.recordExpress)
         loading.dismiss()
@@ -676,7 +675,7 @@ export class HomePage {
   successfulTransaction() {
     this.codigoQR = ''
     this.presentToast('Registro exitoso')
-    this.getLastEntrnacesByLocation('miembros')
+    this.getLastEntrnacesByLocation(this.typeTable)
   }
 
   async presentToast(message) {

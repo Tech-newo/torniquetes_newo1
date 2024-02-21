@@ -18,9 +18,9 @@
       </div>
       <section class="tables">
         <div class="typeBtn">
-          <button [ngClass]="typeTable == 'member' ? 'selected': 'btnTable'" (click)="table('member'); this.getLastEntrnacesByLocation('miembros')" >Miembros</button>
-          <button [ngClass]="typeTable == 'guest' ? 'selected': 'btnTable'" (click)="table('guest'); this.getLastEntrnacesByLocation('invitados')" >Invitados</button>
-          <button [ngClass]="typeTable == 'express' ? 'selected': 'btnTable'" (click)="table('express'); this.getLastEntrnacesByLocation('expres')" >Invitacion Express</button>
+          <button [ngClass]="typeTable == 'member' ? 'selected': 'btnTable'" (click)="table('member'); this.getLastEntrnacesByLocation('member')" >Miembros</button>
+          <button [ngClass]="typeTable == 'guest' ? 'selected': 'btnTable'" (click)="table('guest'); this.getLastEntrnacesByLocation('guest')" >Invitados</button>
+          <button [ngClass]="typeTable == 'express' ? 'selected': 'btnTable'" (click)="table('express'); this.getLastEntrnacesByLocation('express')" >Invitacion Express</button>
         </div>
     
         <div *ngIf="typeTable == 'member'" class="table">

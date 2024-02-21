@@ -10,8 +10,8 @@ import { LoginService } from '../../services/login/login.service';
 })
 export class LoginPage  {
   account: { username: string; password: string; rememberMe: boolean } = {
-    username: 'sarango@newo.co',
-    password: 'Santiago3101.',
+    username: '',
+    password: '',
     rememberMe: false
   };
   isLogin: boolean = false;
