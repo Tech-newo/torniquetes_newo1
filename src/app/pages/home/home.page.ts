@@ -63,6 +63,7 @@ export class HomePage implements OnInit {
     }
 
     close() {
+      sessionStorage.clear()
       this.navController.navigateForward('/');
     }
 
@@ -622,7 +623,7 @@ export class HomePage implements OnInit {
             if (code.typeRegister == 1) {
               sinEntrada = true;
               resultado = false;
-               this.handleFailedTransaction( 'No cuentas con registros de entrada.');
+               this.handleFailedTransaction( 'Ya cuentas con registros de entrada.');
             } else {
               resultado = true;
             }
