@@ -1,45 +1,86 @@
-<ion-content *ngIf="!isLogin">
-  <div class="conetentLogin">
-    <section>
-      <div class="backgroundImg"><img src="../../../assets/img/newo.png" alt=""></div>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <!-- <ion-back-button></ion-back-button> -->
-        </ion-buttons>
-        <ion-title *ngIf="!isLogin">{{ 'LOGIN_TITLE' | translate }}</ion-title>
-        <ion-title *ngIf="isLogin">Bienvenido</ion-title>
-      </ion-toolbar>
-  
-      <form>
-        <ion-input [(ngModel)]="account.username" name="username" label="Usuario" placeholder="user@newo.co"></ion-input>
-        <ion-input [(ngModel)]="account.password" name="password" type="password" label="Contraseña" placeholder="********"></ion-input>
-        <ion-row class="ion-padding">
-          <ion-col>
-            <ion-button expand="block" type="button" (click)="login()">Ingresar</ion-button>
-          </ion-col>
-        </ion-row>
-      </form>
-    </section>
-  </div>
+<ion-header >
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="!statusLogin">{{ 'LOGIN_TITLE' | translate }}</ion-title>
+    <ion-title *ngIf="statusLogin">Bienvenido</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" *ngIf="!statusLogin">
+
+  <form (submit)="doLogin()">
+    <ion-list>
+      <ion-input type="hidden" [(ngModel)]="account.username" name="username"></ion-input>
+      <ion-input type="hidden" [(ngModel)]="account.password" name="password"></ion-input>
+
+      <ion-item>
+        <ion-label>Sede</ion-label>
+        <ion-select  [(ngModel)]="sedeSelect" name="sedeSelect" multiple="false" placeholder="Seleccionar sede">
+          <ion-select-option *ngFor="let sede of sedes" value="{{sede.id}}">{{sede.nombreSede}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>PIN Entrada</ion-label>
+        <ion-textarea [(ngModel)]="PINE" placeholder="PIN ENTRADA" name="PINE"></ion-textarea>
+        <!-- <ion-select  [(ngModel)]="typeSelect" name="typeSelect" multiple="false" placeholder="Seleccione entrada / salida">
+          <ion-select-option value="0">Entrada</ion-select-option>
+          <ion-select-option value="1">Salida</ion-select-option>
+        </ion-select> -->
+      </ion-item>
+
+      <ion-item>
+        <ion-label>PIN Salida</ion-label>
+        <ion-textarea [(ngModel)]="PINS" placeholder="PIN SALIDA" name="PINS"></ion-textarea>
+        <!-- <ion-select  [(ngModel)]="typeSelect" name="typeSelect" multiple="false" placeholder="Seleccione entrada / salida">
+          <ion-select-option value="0">Entrada</ion-select-option>
+          <ion-select-option value="1">Salida</ion-select-option>
+        </ion-select> -->
+      </ion-item>
+
+
+        <ion-input type="hidden" [(ngModel)]="auxSede" name="auxSede" value="{{sedeSelect}},{{PINE}},{{PINS}}"></ion-input>
+      <!-- <ion-item>
+        <ion-label>{{ 'REMEMBER_ME' | translate }}</ion-label>
+        <ion-toggle [(ngModel)]="account.rememberMe" name="rememberMe"></ion-toggle>
+      </ion-item> -->
+      <ion-row class="ion-padding">
+        <ion-col>
+          <ion-label style="color: black;" id="outputMessage">{{mensajeProcedimiento}}</ion-label>
+
+          <ion-button expand="block" type="button" (click)="selectOptions()" color="primary" id="login">Ingresar</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-list>
+  </form>
 
 </ion-content>
 
-<ion-content class="ion-padding" *ngIf="isLogin">
-  <section class="selectionSede">
-    <h4>Selecciona la sede</h4>
+<ion-content class="ion-padding" *ngIf="statusLogin">
+  <div class="content-cards">
+    <ion-card color="dark" (click)="clickCard('qr')">
+      <ion-card-header>
+        <ion-card-title>Leer codigos QR</ion-card-title>
+        <ion-card-subtitle>Ingresar al modulo</ion-card-subtitle>
+      </ion-card-header>
+    
+      <ion-card-content>
+        Bienvenido al módulo de lectura de códigos QR. En este módulo podrás determinar si el código QR es de entrada o salida y validar al miembro o invitado que desee procesar un código QR. 
+      </ion-card-content>
+    </ion-card>
+    
+    <ion-card color="secondary" (click)="clickCard('history')">
+      <ion-card-header>
+        <ion-card-title>Historial de registros</ion-card-title>
+        <ion-card-subtitle>Ingresar al modulo</ion-card-subtitle>
+      </ion-card-header>
+    
+      <ion-card-content>
+        En este módulo encontrarás una lista de todos los registros de entrada y salida de miembros e invitados realizados a través de este torniquete. Podrás filtrar esta lista por diferentes criterios como la fecha o el tipo de visitante, para encontrar de manera más rápida el registro que estés buscando.
+      </ion-card-content>
+    </ion-card>
+  </div>
 
-    <div class="sedes">
-      <div *ngFor="let sede of sedes">
-        <div [ngClass]="selected == sede.id ? 'contentSede Selected' : 'contentSede'" (click)="sedeSelected(sede)">
-          <img src="../../../assets/img/{{sede.id}}.jpg" alt="Del Este">
-          <p>{{sede.nombreSede}}</p>
-          <div class="booking-imgBlur"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="btn">
-      <ion-button expand="block" type="button" (click)="goHome()">Continuar</ion-button>
-    </div>
-  </section>
 </ion-content>

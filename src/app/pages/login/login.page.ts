@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, NavController, ToastController } from '@ionic/angular';
+import { AlertController, NavController, ToastController } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { SedesService } from 'src/app/services/sedes/sedes.service';
 import { LoginService } from '../../services/login/login.service';
 
@@ -8,82 +9,135 @@ import { LoginService } from '../../services/login/login.service';
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss']
 })
-export class LoginPage  {
+export class LoginPage implements OnInit {
+  // The account fields for the login form.
   account: { username: string; password: string; rememberMe: boolean } = {
     username: '',
     password: '',
     rememberMe: false
   };
-  isLogin: boolean = false;
-  sedes: any ;
-  handlerMessage: string;
-  selected: any = 0;
-
+  auxSede: string = ''
+  PINE:any
+  PINS:any
+  sedeSelect: string = ''
+  public static SEDE: string
+  public static PIN_INPUT: string
+  public static PIN_OUTPUT: string
+  
+  // Our translated text strings
+  private loginErrorString: string;
+  public static intervalLog: any;
+  sedes:any = undefined
+  handlerMessage = '';
+  statusLogin: boolean = false;
 
   constructor(
+    public translateService: TranslateService,
     public loginService: LoginService,
     public toastController: ToastController,
     public navController: NavController,
-    public sedesService: SedesService, 
-    private loadingController: LoadingController 
+    public sedesService: SedesService,
+    private alertController: AlertController
     ) { }
 
-  async login() {
-    if (this.account.username && this.account.password){
-      try {
-        const response = await this.loginService.login(this.account)
-        if (response){
-          sessionStorage.setItem('account', JSON.stringify(response))
-          this.presentToast('Successful authentication') 
-          this.isLogin = true
-          await this.searchSedes()
-        }
-      } catch (error) {
-        this.presentToast(error.error.detail) 
-      }
-    } else {
-      this.presentToast('Username and password are required')
-    }
+  ngOnInit() {
+    this.translateService.get('LOGIN_ERROR').subscribe(value => {
+      this.loginErrorString = value;
+    });
+  }
+  
+  ionViewDidEnter(){
+    setTimeout(() => {
+      document.getElementsByName('username')[0]['value'] = "admin";
+      document.getElementsByName('password')[0]['value'] = "Gpsglobal2014";
+      setTimeout(() => {
+        this.doLogin()
+      }, 500);
+      // document.getElementsByName('auxSede')[0]['value'] = "1502,0";
+    }, 1000);
   }
 
-  async searchSedes(){
-    const loading = await this.loadingController.create({
-      duration: 2000,
-    });
-    await loading.present();
-     this.sedesService.query().subscribe({
-      next: response => {
-        this.sedes = response.body;
+  searchSedes(){
+    this.sedesService.query().subscribe(
+      success=>{
+        this.sedes = success.body;
         console.log(this.sedes)
-      },
-      error: error => {
-        console.log(error)
-      },
-    });
+      },error=>{
+        console.error("error",error);
+      }
+    )
   }
 
-  sedeSelected(value) {
-    this.selected = value.id
-    sessionStorage.setItem('sede',JSON.stringify(value))
+  
+  async doLogin() {
+      this.loginService.login(this.account).then(
+        () => {
+          this.searchSedes()
+        },
+        err => {
+          console.log("err_loginService",err)
+        }
+      );
   }
 
-  goHome(){
-    if (this.selected !== 0) {
-      this.navController.navigateRoot('/tabs/home')
+  changeSede(event){
+    console.log("event",event)
+  }
+
+  async selectOptions() {
+    LoginPage.SEDE = this.sedeSelect
+    LoginPage.PIN_INPUT = this.PINE
+    LoginPage.PIN_OUTPUT = this.PINS
+    if (this.sedeSelect === '') {
+      this.alerts('Selecciona la sede.')
+    }
+    else if (LoginPage.PIN_INPUT === '') {
+      this.alerts('Selecciona el pin de activación del torniquete de entrada')
+    }
+    else if (LoginPage.PIN_OUTPUT === '') {
+      this.alerts('Selecciona el pin de activación del torniquete de salida')
+    }
+    else if (LoginPage.PIN_OUTPUT === LoginPage.PIN_INPUT){
+
+      this.alerts('Debes seleccionar pines diferentes.')
     } else {
-      this.presentToast('Seleccione una sede para continuar')
+        localStorage.setItem('sede',LoginPage.SEDE)
+        localStorage.setItem('pin_input',LoginPage.PIN_INPUT)
+        localStorage.setItem('pin_out',LoginPage.PIN_OUTPUT)
+        this.statusLogin = true
+        // this.navController.navigateRoot('/tabs')
     }
   }
 
-
-  async presentToast(message) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      color: 'dark',
-      position: 'top'
-    });
-    toast.present();
+  clickCard(type){
+    if(type == 'qr'){
+      this.navController.navigateRoot('/tabs')
+    }else{
+      this.alerts('¡Modulo en desarrollo!')
+    }
   }
 
+  async alerts(message:any){
+    const alert = await this.alertController.create({
+      header: message,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            this.handlerMessage = 'Alert canceled';
+          },
+        },
+        {
+          text: 'OK',
+          role: 'confirm',
+          handler: () => {
+            this.handlerMessage = 'Alert confirmed';
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
 }
